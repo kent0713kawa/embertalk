@@ -110,11 +110,18 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
 
   return (
-    <div className="flex flex-col bg-[#FAFAF7]">
+    <div className="flex flex-col bg-[#080F07]">
       {/* Header */}
       <div className="px-6 pt-10 pb-6">
-        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">Embertalk</h1>
-        <p className="text-sm text-[#6B7B69] mt-1">テーマを選んで、じっくり考えよう</p>
+        <h1
+          className="text-2xl font-bold tracking-widest"
+          style={{ color: '#F0EBE0', letterSpacing: '0.15em' }}
+        >
+          Embertalk
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>
+          テーマを選んで、じっくり考えよう
+        </p>
       </div>
 
       {/* Category selector */}
@@ -123,35 +130,62 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
-            className={`flex-shrink-0 px-4 py-2 rounded text-center transition-colors ${
+            className="flex-shrink-0 px-4 py-2 rounded text-center transition-all duration-200"
+            style={
               activeCategory === cat
-                ? 'bg-[#1C2B1A] text-white'
-                : 'text-[#6B7B69] border border-[#E8E4DC] hover:border-[#1C2B1A] hover:text-[#1C2B1A]'
-            }`}
+                ? {
+                    background: '#1A2A18',
+                    border: '1px solid rgba(212,84,26,0.55)',
+                    color: '#F0EBE0',
+                  }
+                : {
+                    background: 'transparent',
+                    border: '1px solid rgba(212,84,26,0.18)',
+                    color: '#5A7A55',
+                  }
+            }
           >
             <span className="block text-sm font-medium leading-tight">{cat}</span>
-            <span className={`block text-[10px] leading-tight mt-0.5 ${activeCategory === cat ? 'text-white/60' : 'text-[#6B7B69]/70'}`}>
+            <span
+              className="block text-[10px] leading-tight mt-0.5"
+              style={{ color: activeCategory === cat ? 'rgba(240,235,224,0.5)' : 'rgba(90,122,85,0.6)' }}
+            >
               {CATEGORY_EN[cat]}
             </span>
           </button>
         ))}
       </div>
 
-      <div className="px-6 pb-10 flex flex-col gap-5">
+      <div className="px-6 pb-10 flex flex-col gap-4">
         {/* Question card */}
-        <div className="bg-[#1C2B1A] rounded-lg p-8 flex flex-col gap-5">
-          <p className="text-[#6B7B69] text-xs font-semibold uppercase tracking-widest">
+        <div
+          className="rounded-lg p-7 flex flex-col gap-5"
+          style={{
+            background: '#111A0F',
+            border: '1px solid rgba(212,84,26,0.15)',
+          }}
+        >
+          <p
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: '#5A7A55' }}
+          >
             {activeCategory} · {CATEGORY_EN[activeCategory]}
           </p>
           <div className="flex flex-col gap-3">
-            <p className="text-white text-lg font-medium leading-relaxed">
+            <p
+              className="text-lg font-medium leading-relaxed"
+              style={{ color: '#F0EBE0' }}
+            >
               {currentQuestion}
             </p>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: 'rgba(240,235,224,0.3)' }}
+            >
               {currentQuestionEN}
             </p>
           </div>
-          <p className="text-white/25 text-xs">
+          <p className="text-xs" style={{ color: 'rgba(240,235,224,0.18)' }}>
             {questionIndex + 1} / {QUESTIONS[activeCategory].length}
           </p>
         </div>
@@ -159,14 +193,36 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
         {/* Next button */}
         <button
           onClick={handleNext}
-          className="w-full py-3 border border-[#E8E4DC] text-[#6B7B69] rounded text-sm font-medium hover:border-[#1C2B1A] hover:text-[#1C2B1A] transition-colors"
+          className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200"
+          style={{
+            border: '1px solid rgba(212,84,26,0.22)',
+            color: '#5A7A55',
+            background: 'transparent',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.5)';
+            e.currentTarget.style.color = '#C8B090';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.22)';
+            e.currentTarget.style.color = '#5A7A55';
+          }}
         >
           次の問いへ
         </button>
 
         {/* Answer section */}
-        <div className="border border-[#E8E4DC] rounded-lg p-5">
-          <label className="block text-sm font-semibold text-[#1C2B1A] mb-3">
+        <div
+          className="rounded-lg p-5 flex flex-col gap-4"
+          style={{
+            background: '#111A0F',
+            border: '1px solid rgba(212,84,26,0.15)',
+          }}
+        >
+          <label
+            className="block text-sm font-medium"
+            style={{ color: '#C8B090' }}
+          >
             あなたの答えを書いてみよう
           </label>
           <textarea
@@ -174,12 +230,34 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
             onChange={(e) => setUserAnswer(e.target.value)}
             placeholder="思ったこと、感じたこと、なんでも…"
             rows={4}
-            className="w-full border border-[#E8E4DC] rounded bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C2B1A] placeholder-[#6B7B69] focus:outline-none focus:border-[#D4541A] resize-none leading-relaxed transition-colors"
+            className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
+            style={{
+              background: '#0A1208',
+              border: '1px solid rgba(212,84,26,0.2)',
+              color: '#F0EBE0',
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
           />
           <button
             onClick={handleSendToCoach}
             disabled={!userAnswer.trim()}
-            className="mt-4 w-full py-3 bg-[#D4541A] text-white rounded text-sm font-semibold disabled:opacity-30 transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25"
+            style={{
+              border: '1px solid rgba(212,84,26,0.6)',
+              color: '#D4541A',
+              background: 'transparent',
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.background = 'rgba(212,84,26,0.1)';
+                e.currentTarget.style.borderColor = 'rgba(212,84,26,0.85)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)';
+            }}
           >
             AIコーチに相談する
           </button>

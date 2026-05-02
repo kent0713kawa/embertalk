@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    background-color: #FAFAF7;
-    color: #1C2B1A;
+    background-color: #080F07;
+    color: #F0EBE0;
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic Medium", "Yu Gothic", "Meiryo", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -19,4 +19,8 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+textarea::placeholder {
+  color: #38563A;
 }

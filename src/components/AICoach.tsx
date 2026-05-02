@@ -107,11 +107,21 @@ export default function AICoach({ coachSeed }: AICoachProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#FAFAF7]">
+    <div className="flex flex-col h-full" style={{ background: '#080F07' }}>
       {/* Header */}
-      <div className="px-6 pt-10 pb-6 border-b border-[#E8E4DC]">
-        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">AIコーチ</h1>
-        <p className="text-sm text-[#6B7B69] mt-1">焚き火のそばで、じっくり話そう</p>
+      <div
+        className="px-6 pt-10 pb-5 flex-shrink-0"
+        style={{ borderBottom: '1px solid rgba(212,84,26,0.15)' }}
+      >
+        <h1
+          className="text-2xl font-bold tracking-widest"
+          style={{ color: '#F0EBE0', letterSpacing: '0.12em' }}
+        >
+          EmberAI
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>
+          焚き火のそばで、じっくり話そう
+        </p>
       </div>
 
       {/* Messages */}
@@ -122,17 +132,35 @@ export default function AICoach({ coachSeed }: AICoachProps) {
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[78%] rounded-lg px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+              className="max-w-[78%] rounded-lg px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
+              style={
                 msg.role === 'user'
-                  ? 'bg-[#1C2B1A] text-white'
-                  : 'bg-white text-[#1C2B1A] border border-[#E8E4DC]'
-              }`}
+                  ? {
+                      background: '#1A2A18',
+                      color: '#F0EBE0',
+                      border: '1px solid rgba(212,84,26,0.2)',
+                    }
+                  : {
+                      background: '#111A0F',
+                      color: '#C8B090',
+                      border: '1px solid rgba(212,84,26,0.15)',
+                    }
+              }
             >
               {msg.content === '' && msg.role === 'assistant' ? (
                 <span className="flex gap-1 items-center h-4">
-                  <span className="w-1.5 h-1.5 bg-[#D4541A] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#D4541A] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#D4541A] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full animate-bounce"
+                    style={{ background: '#D4541A', animationDelay: '0ms' }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full animate-bounce"
+                    style={{ background: '#D4541A', animationDelay: '150ms' }}
+                  />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full animate-bounce"
+                    style={{ background: '#D4541A', animationDelay: '300ms' }}
+                  />
                 </span>
               ) : (
                 msg.content
@@ -144,7 +172,10 @@ export default function AICoach({ coachSeed }: AICoachProps) {
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t border-[#E8E4DC]">
+      <div
+        className="px-6 py-4 flex-shrink-0"
+        style={{ borderTop: '1px solid rgba(212,84,26,0.15)' }}
+      >
         <div className="flex gap-3 items-end">
           <textarea
             value={input}
@@ -152,13 +183,35 @@ export default function AICoach({ coachSeed }: AICoachProps) {
             onKeyDown={handleKeyDown}
             placeholder="今、何を感じてる？"
             rows={1}
-            className="flex-1 resize-none border border-[#E8E4DC] rounded bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C2B1A] placeholder-[#6B7B69] focus:outline-none focus:border-[#D4541A] max-h-32 overflow-y-auto transition-colors"
-            style={{ minHeight: '44px' }}
+            className="flex-1 resize-none rounded px-4 py-3 text-sm max-h-32 overflow-y-auto focus:outline-none transition-all duration-200"
+            style={{
+              background: '#0A1208',
+              border: '1px solid rgba(212,84,26,0.2)',
+              color: '#F0EBE0',
+              minHeight: '44px',
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="w-11 h-11 flex-shrink-0 rounded bg-[#D4541A] text-white flex items-center justify-center disabled:opacity-30 transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-11 h-11 flex-shrink-0 rounded flex items-center justify-center transition-all duration-200 disabled:opacity-25"
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(212,84,26,0.55)',
+              color: '#D4541A',
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.background = 'rgba(212,84,26,0.1)';
+                e.currentTarget.style.borderColor = 'rgba(212,84,26,0.85)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'rgba(212,84,26,0.55)';
+            }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

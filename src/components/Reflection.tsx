@@ -54,99 +54,181 @@ export default function Reflection() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  const textareaClass =
-    'w-full border border-[#E8E4DC] rounded bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C2B1A] placeholder-[#6B7B69] focus:outline-none focus:border-[#D4541A] resize-none leading-relaxed transition-colors';
+  const textareaStyle = {
+    background: '#0A1208',
+    border: '1px solid rgba(212,84,26,0.2)',
+    color: '#F0EBE0',
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)';
+  };
+  const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)';
+  };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-[#FAFAF7]">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ background: '#080F07' }}>
       {/* Header */}
       <div className="px-6 pt-10 pb-6">
-        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">内省</h1>
-        <p className="text-sm text-[#6B7B69] mt-1">今日の気づきを書き留めよう</p>
+        <h1
+          className="text-2xl font-bold tracking-widest"
+          style={{ color: '#F0EBE0', letterSpacing: '0.12em' }}
+        >
+          Reflect
+        </h1>
+        <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>
+          今日の気づきを書き留めよう
+        </p>
       </div>
 
       {/* Input form */}
-      <div className="px-6 space-y-4">
-        <div className="border border-[#E8E4DC] rounded-lg p-5">
-          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+      <div className="px-6 space-y-3">
+        <div
+          className="rounded-lg p-5"
+          style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}
+        >
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{ color: '#5A7A55' }}
+          >
             自分らしい瞬間
           </label>
           <textarea
             value={moment}
             onChange={(e) => setMoment(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder="例：みんなが困っているときに、自然と声をかけていた"
             rows={3}
-            className={textareaClass}
+            className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
+            style={textareaStyle}
           />
         </div>
 
-        <div className="border border-[#E8E4DC] rounded-lg p-5">
-          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+        <div
+          className="rounded-lg p-5"
+          style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}
+        >
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{ color: '#5A7A55' }}
+          >
             伸ばしたいこと
           </label>
           <textarea
             value={improvement}
             onChange={(e) => setImprovement(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder="例：もっと自分の意見をはっきり言えるようになりたい"
             rows={3}
-            className={textareaClass}
+            className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
+            style={textareaStyle}
           />
         </div>
 
-        <div className="border border-[#E8E4DC] rounded-lg p-5">
-          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+        <div
+          className="rounded-lg p-5"
+          style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}
+        >
+          <label
+            className="block text-xs font-semibold uppercase tracking-wider mb-3"
+            style={{ color: '#5A7A55' }}
+          >
             明日やること
           </label>
           <textarea
             value={action}
             onChange={(e) => setAction(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder="例：朝、鏡の前で今日の自分に一言かけてみる"
             rows={2}
-            className={textareaClass}
+            className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
+            style={textareaStyle}
           />
         </div>
 
         <button
           onClick={handleSave}
           disabled={!moment.trim() && !improvement.trim() && !action.trim()}
-          className="w-full py-3.5 bg-[#1C2B1A] text-white rounded text-sm font-semibold disabled:opacity-30 transition-opacity hover:opacity-90 active:opacity-80"
+          className="w-full py-3.5 rounded text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25"
+          style={{
+            border: '1px solid rgba(212,84,26,0.55)',
+            color: saved ? '#5A7A55' : '#D4541A',
+            background: saved ? 'rgba(90,122,85,0.08)' : 'transparent',
+          }}
+          onMouseEnter={(e) => {
+            if (!e.currentTarget.disabled) {
+              e.currentTarget.style.background = 'rgba(212,84,26,0.08)';
+              e.currentTarget.style.borderColor = 'rgba(212,84,26,0.8)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = saved ? 'rgba(90,122,85,0.08)' : 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.55)';
+          }}
         >
-          {saved ? '保存しました' : '今日の気づきを保存する'}
+          {saved ? '保存しました ✓' : '今日の気づきを保存する'}
         </button>
       </div>
 
       {/* Past entries */}
       {entries.length > 0 && (
-        <div className="px-6 mt-12 pb-8">
-          <h2 className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-4">過去の記録</h2>
+        <div className="px-6 mt-10 pb-8">
+          <h2
+            className="text-xs font-semibold uppercase tracking-widest mb-4"
+            style={{ color: '#38563A' }}
+          >
+            過去の記録
+          </h2>
           <div className="space-y-3">
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="border border-[#E8E4DC] rounded-lg p-5 relative"
+                className="rounded-lg p-5 relative"
+                style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.12)' }}
               >
-                <p className="text-xs text-[#6B7B69] mb-3">{entry.date}</p>
+                <p className="text-xs mb-3" style={{ color: '#38563A' }}>
+                  {entry.date}
+                </p>
                 {entry.moment && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">自分らしい瞬間</p>
-                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.moment}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#38563A' }}>
+                      自分らしい瞬間
+                    </p>
+                    <p className="text-sm mt-1 leading-relaxed" style={{ color: '#C8B090' }}>
+                      {entry.moment}
+                    </p>
                   </div>
                 )}
                 {entry.improvement && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">伸ばしたいこと</p>
-                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.improvement}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#38563A' }}>
+                      伸ばしたいこと
+                    </p>
+                    <p className="text-sm mt-1 leading-relaxed" style={{ color: '#C8B090' }}>
+                      {entry.improvement}
+                    </p>
                   </div>
                 )}
                 {entry.action && (
                   <div>
-                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">明日やること</p>
-                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.action}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#38563A' }}>
+                      明日やること
+                    </p>
+                    <p className="text-sm mt-1 leading-relaxed" style={{ color: '#C8B090' }}>
+                      {entry.action}
+                    </p>
                   </div>
                 )}
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="absolute top-4 right-4 text-[#6B7B69] hover:text-[#8B2500] transition-colors text-sm leading-none"
+                  className="absolute top-4 right-4 text-sm leading-none transition-colors duration-200"
+                  style={{ color: '#38563A' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = '#D4541A'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = '#38563A'; }}
                 >
                   ×
                 </button>

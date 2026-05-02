@@ -28,8 +28,8 @@ export default function Home() {
   }
 
   return (
-    <div className="fixed inset-0 flex justify-center bg-[#E8E4DC]">
-      <div className="relative w-full max-w-[430px] bg-[#FAFAF7] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 flex justify-center bg-[#080F07]">
+      <div className="relative w-full max-w-[430px] bg-[#080F07] flex flex-col overflow-hidden">
         <div className="flex-1 overflow-hidden pb-16">
           <div className="h-full overflow-y-auto scrollbar-hide">
             {activeTab === 'question' && (
