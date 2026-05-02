@@ -55,20 +55,21 @@ export default function Reflection() {
   };
 
   const textareaClass =
-    'w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none leading-relaxed';
+    'w-full border border-[#E8E4DC] rounded bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C2B1A] placeholder-[#6B7B69] focus:outline-none focus:border-[#D4541A] resize-none leading-relaxed transition-colors';
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-amber-50/50">
-      <div className="px-4 pt-6 pb-3">
-        <h1 className="text-xl font-bold text-stone-800">内省</h1>
-        <p className="text-sm text-stone-500">今日の気づきを木の葉に刻んでおこう</p>
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-[#FAFAF7]">
+      {/* Header */}
+      <div className="px-6 pt-10 pb-6">
+        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">内省</h1>
+        <p className="text-sm text-[#6B7B69] mt-1">今日の気づきを書き留めよう</p>
       </div>
 
       {/* Input form */}
-      <div className="px-4 space-y-4">
-        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
-          <label className="block text-sm font-semibold text-rose-600 mb-2">
-            🌟 いちばん「自分らしい」と感じた瞬間
+      <div className="px-6 space-y-4">
+        <div className="border border-[#E8E4DC] rounded-lg p-5">
+          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+            自分らしい瞬間
           </label>
           <textarea
             value={moment}
@@ -79,9 +80,9 @@ export default function Reflection() {
           />
         </div>
 
-        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
-          <label className="block text-sm font-semibold text-emerald-700 mb-2">
-            🌱 もっと伸ばしたいこと・気になったこと
+        <div className="border border-[#E8E4DC] rounded-lg p-5">
+          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+            伸ばしたいこと
           </label>
           <textarea
             value={improvement}
@@ -92,9 +93,9 @@ export default function Reflection() {
           />
         </div>
 
-        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
-          <label className="block text-sm font-semibold text-amber-700 mb-2">
-            🔥 明日からひとつやること
+        <div className="border border-[#E8E4DC] rounded-lg p-5">
+          <label className="block text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-3">
+            明日やること
           </label>
           <textarea
             value={action}
@@ -108,44 +109,44 @@ export default function Reflection() {
         <button
           onClick={handleSave}
           disabled={!moment.trim() && !improvement.trim() && !action.trim()}
-          className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-2xl font-bold text-base disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-md"
+          className="w-full py-3.5 bg-[#1C2B1A] text-white rounded text-sm font-semibold disabled:opacity-30 transition-opacity hover:opacity-90 active:opacity-80"
         >
-          {saved ? '✓ 保存しました！' : '今日の気づきを保存する'}
+          {saved ? '保存しました' : '今日の気づきを保存する'}
         </button>
       </div>
 
       {/* Past entries */}
       {entries.length > 0 && (
-        <div className="px-4 mt-8 pb-6">
-          <h2 className="text-sm font-bold text-stone-600 mb-3">過去の記録</h2>
+        <div className="px-6 mt-12 pb-8">
+          <h2 className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider mb-4">過去の記録</h2>
           <div className="space-y-3">
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-white rounded-2xl border border-amber-200 shadow-sm p-4 relative"
+                className="border border-[#E8E4DC] rounded-lg p-5 relative"
               >
-                <p className="text-xs text-stone-400 mb-2">{entry.date}</p>
+                <p className="text-xs text-[#6B7B69] mb-3">{entry.date}</p>
                 {entry.moment && (
-                  <div className="mb-2">
-                    <p className="text-xs text-rose-600 font-semibold">🌟 らしい瞬間</p>
-                    <p className="text-sm text-stone-700 mt-0.5">{entry.moment}</p>
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">自分らしい瞬間</p>
+                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.moment}</p>
                   </div>
                 )}
                 {entry.improvement && (
-                  <div className="mb-2">
-                    <p className="text-xs text-emerald-700 font-semibold">🌱 伸ばしたいこと</p>
-                    <p className="text-sm text-stone-700 mt-0.5">{entry.improvement}</p>
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">伸ばしたいこと</p>
+                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.improvement}</p>
                   </div>
                 )}
                 {entry.action && (
                   <div>
-                    <p className="text-xs text-amber-700 font-semibold">🔥 やること</p>
-                    <p className="text-sm text-stone-700 mt-0.5">{entry.action}</p>
+                    <p className="text-xs font-semibold text-[#6B7B69] uppercase tracking-wider">明日やること</p>
+                    <p className="text-sm text-[#1C2B1A] mt-1 leading-relaxed">{entry.action}</p>
                   </div>
                 )}
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="absolute top-3 right-3 text-stone-300 hover:text-red-400 transition-colors text-lg leading-none"
+                  className="absolute top-4 right-4 text-[#6B7B69] hover:text-[#8B2500] transition-colors text-sm leading-none"
                 >
                   ×
                 </button>

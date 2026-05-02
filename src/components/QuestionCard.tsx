@@ -40,14 +40,6 @@ const QUESTIONS: Record<Category, string[]> = {
   ],
 };
 
-const CATEGORY_STYLES: Record<Category, { gradient: string; badge: string }> = {
-  らしさ: { gradient: 'from-rose-400 to-pink-600', badge: 'bg-rose-100 text-rose-700' },
-  強み: { gradient: 'from-emerald-600 to-green-800', badge: 'bg-emerald-100 text-emerald-800' },
-  挑戦: { gradient: 'from-amber-400 to-orange-600', badge: 'bg-amber-100 text-amber-800' },
-  関係性: { gradient: 'from-orange-300 to-red-500', badge: 'bg-orange-100 text-orange-700' },
-  未来: { gradient: 'from-teal-500 to-emerald-700', badge: 'bg-teal-100 text-teal-800' },
-};
-
 export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   const [activeCategory, setActiveCategory] = useState<Category>('らしさ');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -74,26 +66,25 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   };
 
   const currentQuestion = QUESTIONS[activeCategory][questionIndex];
-  const style = CATEGORY_STYLES[activeCategory];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-[#FAFAF7]">
       {/* Header */}
-      <div className="px-4 pt-6 pb-3">
-        <h1 className="text-xl font-bold text-stone-800">問いカード</h1>
-        <p className="text-sm text-stone-500">テーマを選んで、森の中でじっくり考えよう</p>
+      <div className="px-6 pt-10 pb-6">
+        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">問いカード</h1>
+        <p className="text-sm text-[#6B7B69] mt-1">テーマを選んで、じっくり考えよう</p>
       </div>
 
       {/* Category selector */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-6 pb-6">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex-shrink-0 px-4 py-1.5 rounded text-sm font-medium transition-colors ${
               activeCategory === cat
-                ? 'bg-amber-700 text-white shadow-md'
-                : 'bg-amber-100 text-stone-600 border border-amber-200 hover:bg-amber-200'
+                ? 'bg-[#1C2B1A] text-white'
+                : 'text-[#6B7B69] border border-[#E8E4DC] hover:border-[#1C2B1A] hover:text-[#1C2B1A]'
             }`}
           >
             {cat}
@@ -101,53 +92,47 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
         ))}
       </div>
 
-      <div className="px-4 pb-6 flex flex-col gap-4">
+      <div className="px-6 pb-10 flex flex-col gap-4">
         {/* Question card */}
-        <div
-          className={`flex flex-col items-center justify-center rounded-3xl bg-gradient-to-br ${style.gradient} p-8 shadow-lg min-h-[180px]`}
-        >
-          <div className="text-center">
-            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${style.badge} opacity-90`}>
+        <div className="bg-[#1C2B1A] rounded-lg p-8 min-h-[200px] flex flex-col justify-between">
+          <div>
+            <p className="text-[#6B7B69] text-xs font-semibold uppercase tracking-widest mb-5">
               {activeCategory}
-            </span>
-            <p className="text-white text-lg font-bold leading-relaxed">
+            </p>
+            <p className="text-white text-lg font-medium leading-relaxed">
               {currentQuestion}
             </p>
-            <p className="text-white/60 text-xs mt-5">
-              {questionIndex + 1} / {QUESTIONS[activeCategory].length}
-            </p>
           </div>
+          <p className="text-[#4A3000] text-xs mt-6 opacity-60">
+            {questionIndex + 1} / {QUESTIONS[activeCategory].length}
+          </p>
         </div>
 
         {/* Next button */}
         <button
           onClick={handleNext}
-          className="w-full py-3 bg-amber-50 border-2 border-amber-200 text-amber-800 rounded-2xl font-bold text-sm hover:bg-amber-100 active:bg-amber-200 transition-all"
+          className="w-full py-3 border border-[#E8E4DC] text-[#6B7B69] rounded text-sm font-medium hover:border-[#1C2B1A] hover:text-[#1C2B1A] transition-colors"
         >
-          次の問いへ →
+          次の問いへ
         </button>
 
         {/* Answer section */}
-        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
-          <label className="block text-sm font-semibold text-stone-700 mb-2">
-            🌿 あなたの答えを書いてみよう
+        <div className="border border-[#E8E4DC] rounded-lg p-5 mt-2">
+          <label className="block text-sm font-semibold text-[#1C2B1A] mb-3">
+            あなたの答えを書いてみよう
           </label>
           <textarea
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             placeholder="思ったこと、感じたこと、なんでも…"
             rows={4}
-            className="w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none leading-relaxed"
+            className="w-full border border-[#E8E4DC] rounded bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C2B1A] placeholder-[#6B7B69] focus:outline-none focus:border-[#D4541A] resize-none leading-relaxed transition-colors"
           />
-
           <button
             onClick={handleSendToCoach}
             disabled={!userAnswer.trim()}
-            className="mt-3 w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-2xl font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-md flex items-center justify-center gap-2"
+            className="mt-4 w-full py-3 bg-[#D4541A] text-white rounded text-sm font-semibold disabled:opacity-30 transition-opacity hover:opacity-90 active:opacity-80"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
             AIコーチに相談する
           </button>
         </div>

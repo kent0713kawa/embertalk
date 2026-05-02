@@ -22,9 +22,9 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center bg-stone-300">
-      <div className="relative w-full max-w-[430px] bg-amber-50 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden pb-16">
+    <div className="fixed inset-0 flex justify-center bg-[#E8E4DC]">
+      <div className="relative w-full max-w-[430px] bg-[#FAFAF7] flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden pb-14">
           <div className="h-full overflow-hidden">
             {activeTab === 'question' && (
               <QuestionCard onSendToCoach={handleSendToCoach} />

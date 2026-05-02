@@ -4,7 +4,10 @@
 
 @layer base {
   body {
-    background-color: #d6d3d1;
+    background-color: #FAFAF7;
+    color: #1C2B1A;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic Medium", "Yu Gothic", "Meiryo", sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
