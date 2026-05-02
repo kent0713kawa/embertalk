@@ -110,10 +110,10 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-[#FAFAF7]">
+    <div className="flex flex-col bg-[#FAFAF7]">
       {/* Header */}
       <div className="px-6 pt-10 pb-6">
-        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">問いカード</h1>
+        <h1 className="text-2xl font-bold text-[#1C2B1A] tracking-tight">Embertalk</h1>
         <p className="text-sm text-[#6B7B69] mt-1">テーマを選んで、じっくり考えよう</p>
       </div>
 
