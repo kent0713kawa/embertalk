@@ -24,3 +24,58 @@
 textarea::placeholder {
   color: #38563A;
 }
+
+/* Tab transition animations */
+@keyframes ember-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ember-flash {
+  0%   { opacity: 0; }
+  25%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.ember-enter {
+  animation: ember-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ember-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 75%,
+    rgba(212, 84, 26, 0.22) 0%,
+    rgba(232, 120, 32, 0.08) 40%,
+    transparent 70%
+  );
+  animation: ember-flash 0.55s ease-out forwards;
+  z-index: 10;
+}
+
+/* Ember Report modal animations */
+@keyframes ember-modal-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ember-modal-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.ember-modal-backdrop {
+  animation: ember-modal-backdrop-in 0.25s ease-out forwards;
+}
+
+.ember-modal-enter {
+  animation: ember-modal-slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

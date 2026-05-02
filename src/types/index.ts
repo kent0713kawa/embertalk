@@ -13,3 +13,17 @@ export interface ReflectionEntry {
   improvement: string;
   action: string;
 }
+
+export interface GlowAnswer {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  date: string;
+}
+
+export interface EmberReport {
+  id: string;
+  date: string;
+  content: string;
+}

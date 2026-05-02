@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Category } from '@/types';
+import { Category, GlowAnswer } from '@/types';
+
+const GLOW_STORAGE_KEY = 'embertalk_glow_answers';
 
 interface QuestionCardProps {
   onSendToCoach: (question: string, answer: string) => void;
@@ -102,6 +104,19 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
 
   const handleSendToCoach = () => {
     if (!userAnswer.trim()) return;
+
+    try {
+      const existing: GlowAnswer[] = JSON.parse(localStorage.getItem(GLOW_STORAGE_KEY) || '[]');
+      const entry: GlowAnswer = {
+        id: Date.now().toString(),
+        question: currentQuestion,
+        answer: userAnswer.trim(),
+        category: activeCategory,
+        date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+      };
+      localStorage.setItem(GLOW_STORAGE_KEY, JSON.stringify([entry, ...existing].slice(0, 20)));
+    } catch { /* ignore */ }
+
     onSendToCoach(currentQuestion, userAnswer.trim());
     setUserAnswer('');
   };
