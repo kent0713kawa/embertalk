@@ -7,7 +7,11 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['"Zen Maru Gothic"', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

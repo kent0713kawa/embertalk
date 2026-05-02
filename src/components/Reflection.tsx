@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ReflectionEntry } from '@/types';
 
 const STORAGE_KEY = 'embertalk_reflections';
@@ -54,17 +54,20 @@ export default function Reflection() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
+  const textareaClass =
+    'w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none leading-relaxed';
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
+    <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-amber-50/50">
       <div className="px-4 pt-6 pb-3">
-        <h1 className="text-xl font-bold text-gray-800">内省</h1>
-        <p className="text-sm text-gray-500">今日の気づきを残しておこう</p>
+        <h1 className="text-xl font-bold text-stone-800">内省</h1>
+        <p className="text-sm text-stone-500">今日の気づきを木の葉に刻んでおこう</p>
       </div>
 
       {/* Input form */}
       <div className="px-4 space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-violet-700 mb-1">
+        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
+          <label className="block text-sm font-semibold text-rose-600 mb-2">
             🌟 いちばん「自分らしい」と感じた瞬間
           </label>
           <textarea
@@ -72,25 +75,25 @@ export default function Reflection() {
             onChange={(e) => setMoment(e.target.value)}
             placeholder="例：みんなが困っているときに、自然と声をかけていた"
             rows={3}
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
+            className={textareaClass}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-teal-600 mb-1">
-            💡 もっと伸ばしたいこと・気になったこと
+        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
+          <label className="block text-sm font-semibold text-emerald-700 mb-2">
+            🌱 もっと伸ばしたいこと・気になったこと
           </label>
           <textarea
             value={improvement}
             onChange={(e) => setImprovement(e.target.value)}
             placeholder="例：もっと自分の意見をはっきり言えるようになりたい"
             rows={3}
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none"
+            className={textareaClass}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-orange-500 mb-1">
+        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
+          <label className="block text-sm font-semibold text-amber-700 mb-2">
             🔥 明日からひとつやること
           </label>
           <textarea
@@ -98,14 +101,14 @@ export default function Reflection() {
             onChange={(e) => setAction(e.target.value)}
             placeholder="例：朝、鏡の前で今日の自分に一言かけてみる"
             rows={2}
-            className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none"
+            className={textareaClass}
           />
         </div>
 
         <button
           onClick={handleSave}
           disabled={!moment.trim() && !improvement.trim() && !action.trim()}
-          className="w-full py-4 bg-gradient-to-r from-violet-600 to-teal-500 text-white rounded-2xl font-bold text-base disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-md"
+          className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-2xl font-bold text-base disabled:opacity-40 transition-all hover:opacity-90 active:scale-[0.98] shadow-md"
         >
           {saved ? '✓ 保存しました！' : '今日の気づきを保存する'}
         </button>
@@ -113,36 +116,36 @@ export default function Reflection() {
 
       {/* Past entries */}
       {entries.length > 0 && (
-        <div className="px-4 mt-8 pb-4">
-          <h2 className="text-sm font-bold text-gray-600 mb-3">過去の記録</h2>
+        <div className="px-4 mt-8 pb-6">
+          <h2 className="text-sm font-bold text-stone-600 mb-3">過去の記録</h2>
           <div className="space-y-3">
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative"
+                className="bg-white rounded-2xl border border-amber-200 shadow-sm p-4 relative"
               >
-                <p className="text-xs text-gray-400 mb-2">{entry.date}</p>
+                <p className="text-xs text-stone-400 mb-2">{entry.date}</p>
                 {entry.moment && (
                   <div className="mb-2">
-                    <p className="text-xs text-violet-600 font-semibold">🌟 らしい瞬間</p>
-                    <p className="text-sm text-gray-700 mt-0.5">{entry.moment}</p>
+                    <p className="text-xs text-rose-600 font-semibold">🌟 らしい瞬間</p>
+                    <p className="text-sm text-stone-700 mt-0.5">{entry.moment}</p>
                   </div>
                 )}
                 {entry.improvement && (
                   <div className="mb-2">
-                    <p className="text-xs text-teal-600 font-semibold">💡 伸ばしたいこと</p>
-                    <p className="text-sm text-gray-700 mt-0.5">{entry.improvement}</p>
+                    <p className="text-xs text-emerald-700 font-semibold">🌱 伸ばしたいこと</p>
+                    <p className="text-sm text-stone-700 mt-0.5">{entry.improvement}</p>
                   </div>
                 )}
                 {entry.action && (
                   <div>
-                    <p className="text-xs text-orange-500 font-semibold">🔥 やること</p>
-                    <p className="text-sm text-gray-700 mt-0.5">{entry.action}</p>
+                    <p className="text-xs text-amber-700 font-semibold">🔥 やること</p>
+                    <p className="text-sm text-stone-700 mt-0.5">{entry.action}</p>
                   </div>
                 )}
                 <button
                   onClick={() => handleDelete(entry.id)}
-                  className="absolute top-3 right-3 text-gray-300 hover:text-red-400 transition-colors text-lg leading-none"
+                  className="absolute top-3 right-3 text-stone-300 hover:text-red-400 transition-colors text-lg leading-none"
                 >
                   ×
                 </button>

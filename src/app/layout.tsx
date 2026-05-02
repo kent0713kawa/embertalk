@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Zen_Maru_Gothic } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const font = Zen_Maru_Gothic({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700', '900'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'embertalk',
@@ -16,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>{children}</body>
+      <body className={font.className}>{children}</body>
     </html>
   );
 }

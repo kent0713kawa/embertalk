@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Tab } from '@/types';
 import BottomNav from '@/components/BottomNav';
 import QuestionCard from '@/components/QuestionCard';
@@ -9,15 +9,29 @@ import Reflection from '@/components/Reflection';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('question');
+  const [coachSeed, setCoachSeed] = useState<{ key: number; text: string } | null>(null);
+  const seedKeyRef = useRef(0);
+
+  const handleSendToCoach = (question: string, answer: string) => {
+    seedKeyRef.current += 1;
+    setCoachSeed({
+      key: seedKeyRef.current,
+      text: `「${question}」という問いについて考えてみました。\n\n${answer}`,
+    });
+    setActiveTab('coach');
+  };
 
   return (
-    <div className="fixed inset-0 flex justify-center bg-gray-100">
+    <div className="fixed inset-0 flex justify-center bg-stone-300">
       <div className="relative w-full max-w-[430px] bg-amber-50 flex flex-col overflow-hidden">
-        {/* Content area — leaves room for bottom nav */}
         <div className="flex-1 overflow-hidden pb-16">
           <div className="h-full overflow-hidden">
-            {activeTab === 'question' && <QuestionCard />}
-            {activeTab === 'coach' && <AICoach />}
+            {activeTab === 'question' && (
+              <QuestionCard onSendToCoach={handleSendToCoach} />
+            )}
+            {activeTab === 'coach' && (
+              <AICoach coachSeed={coachSeed} />
+            )}
             {activeTab === 'reflection' && <Reflection />}
           </div>
         </div>

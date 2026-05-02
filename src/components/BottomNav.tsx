@@ -39,7 +39,7 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
-    <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex h-16 shadow-lg">
+    <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-amber-200 flex h-16 shadow-lg">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -47,7 +47,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
-              isActive ? 'text-violet-600' : 'text-gray-400'
+              isActive ? 'text-amber-700' : 'text-stone-400'
             }`}
           >
             {tab.icon}
