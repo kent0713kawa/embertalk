@@ -8,9 +8,9 @@ interface BottomNavProps {
 }
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'question', label: '問いカード' },
-  { id: 'coach', label: 'AIコーチ' },
-  { id: 'reflection', label: '内省' },
+  { id: 'question', label: 'Glow' },
+  { id: 'coach', label: 'EmberAI' },
+  { id: 'reflection', label: 'Reflect' },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
@@ -22,7 +22,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center text-sm font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center text-sm font-medium tracking-wide transition-colors ${
               isActive ? 'text-[#D4541A]' : 'text-[#6B7B69] hover:text-[#1C2B1A]'
             }`}
           >

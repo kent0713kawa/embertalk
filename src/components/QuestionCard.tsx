@@ -40,6 +40,47 @@ const QUESTIONS: Record<Category, string[]> = {
   ],
 };
 
+const QUESTIONS_EN: Record<Category, string[]> = {
+  らしさ: [
+    'When did you last feel most like yourself?',
+    'What part of you has stayed the same over the years?',
+    "When do friends say \"that's so you\"?",
+    'When do you feel most natural and at ease?',
+  ],
+  強み: [
+    'What have you been thanked for recently?',
+    'Describe a moment you felt truly helpful to someone.',
+    'What do you do effortlessly, almost without thinking?',
+    'What do people often ask you for help with?',
+  ],
+  挑戦: [
+    'What recent challenge was worth the leap?',
+    'What did you discover about yourself through that challenge?',
+    'If success were guaranteed, what would you try?',
+    'What would you do with just a little more courage?',
+  ],
+  関係性: [
+    'Is there someone who brings out an unexpected side of you?',
+    'Who makes you feel most like yourself?',
+    'Who have you been meaning to thank lately?',
+    'Share a moment in a relationship that made you happy.',
+  ],
+  未来: [
+    'What message would you send to yourself three years from now?',
+    'What kind of person do you want to become?',
+    'What values do you want to carry forward?',
+    'What is one thing you can start tomorrow?',
+  ],
+};
+
+const CATEGORY_EN: Record<Category, string> = {
+  らしさ: 'Identity',
+  強み: 'Strengths',
+  挑戦: 'Challenge',
+  関係性: 'Relations',
+  未来: 'Future',
+};
+
 export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   const [activeCategory, setActiveCategory] = useState<Category>('らしさ');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -66,6 +107,7 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   };
 
   const currentQuestion = QUESTIONS[activeCategory][questionIndex];
+  const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
 
   return (
     <div className="flex flex-col h-full overflow-y-auto scrollbar-hide bg-[#FAFAF7]">
@@ -81,29 +123,35 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
-            className={`flex-shrink-0 px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+            className={`flex-shrink-0 px-4 py-2 rounded text-center transition-colors ${
               activeCategory === cat
                 ? 'bg-[#1C2B1A] text-white'
                 : 'text-[#6B7B69] border border-[#E8E4DC] hover:border-[#1C2B1A] hover:text-[#1C2B1A]'
             }`}
           >
-            {cat}
+            <span className="block text-sm font-medium leading-tight">{cat}</span>
+            <span className={`block text-[10px] leading-tight mt-0.5 ${activeCategory === cat ? 'text-white/60' : 'text-[#6B7B69]/70'}`}>
+              {CATEGORY_EN[cat]}
+            </span>
           </button>
         ))}
       </div>
 
-      <div className="px-6 pb-10 flex flex-col gap-4">
+      <div className="px-6 pb-10 flex flex-col gap-5">
         {/* Question card */}
-        <div className="bg-[#1C2B1A] rounded-lg p-8 min-h-[200px] flex flex-col justify-between">
-          <div>
-            <p className="text-[#6B7B69] text-xs font-semibold uppercase tracking-widest mb-5">
-              {activeCategory}
-            </p>
+        <div className="bg-[#1C2B1A] rounded-lg p-8 flex flex-col gap-5">
+          <p className="text-[#6B7B69] text-xs font-semibold uppercase tracking-widest">
+            {activeCategory} · {CATEGORY_EN[activeCategory]}
+          </p>
+          <div className="flex flex-col gap-3">
             <p className="text-white text-lg font-medium leading-relaxed">
               {currentQuestion}
             </p>
+            <p className="text-white/40 text-sm leading-relaxed">
+              {currentQuestionEN}
+            </p>
           </div>
-          <p className="text-[#4A3000] text-xs mt-6 opacity-60">
+          <p className="text-white/25 text-xs">
             {questionIndex + 1} / {QUESTIONS[activeCategory].length}
           </p>
         </div>
@@ -117,7 +165,7 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
         </button>
 
         {/* Answer section */}
-        <div className="border border-[#E8E4DC] rounded-lg p-5 mt-2">
+        <div className="border border-[#E8E4DC] rounded-lg p-5">
           <label className="block text-sm font-semibold text-[#1C2B1A] mb-3">
             あなたの答えを書いてみよう
           </label>
