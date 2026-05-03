@@ -90,3 +90,17 @@ textarea::placeholder {
   pointer-events: none;
   z-index: 30;
 }
+
+/* Campfire flame animations (EmpathyView) */
+@keyframes flame-outer {
+  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.8; }
+  100% { transform: translateX(-50%) scaleY(1.07) scaleX(0.93); opacity: 0.95; }
+}
+@keyframes flame-mid {
+  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); }
+  100% { transform: translateX(-50%) scaleY(1.11) scaleX(0.86); }
+}
+@keyframes flame-tip {
+  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.88; }
+  100% { transform: translateX(-50%) scaleY(1.15) scaleX(0.75); opacity: 1; }
+}

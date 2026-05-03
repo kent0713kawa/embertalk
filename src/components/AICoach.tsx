@@ -115,7 +115,7 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
       {/* Header */}
       <div
         className="px-6 pt-10 pb-5 flex-shrink-0"
-        style={{ borderBottom: '1px solid rgba(212,84,26,0.15)' }}
+        style={{ borderBottom: '1px solid rgba(107,76,42,0.5)' }}
       >
         <h1
           className="text-2xl font-bold tracking-widest"
@@ -142,12 +142,12 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
                   ? {
                       background: '#1A2A18',
                       color: '#F0EBE0',
-                      border: '1px solid rgba(212,84,26,0.2)',
+                      border: '1px solid rgba(107,76,42,0.55)',
                     }
                   : {
                       background: '#111A0F',
                       color: '#C8B090',
-                      border: '1px solid rgba(212,84,26,0.15)',
+                      border: '1px solid rgba(107,76,42,0.5)',
                     }
               }
             >
@@ -178,7 +178,7 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
       {/* Input */}
       <div
         className="px-6 py-4 flex-shrink-0"
-        style={{ borderTop: '1px solid rgba(212,84,26,0.15)' }}
+        style={{ borderTop: '1px solid rgba(107,76,42,0.5)' }}
       >
         <div className="flex gap-3 items-end">
           <textarea
@@ -190,12 +190,12 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
             className="flex-1 resize-none rounded px-4 py-3 text-sm max-h-32 overflow-y-auto focus:outline-none transition-all duration-200"
             style={{
               background: '#0A1208',
-              border: '1px solid rgba(212,84,26,0.2)',
+              border: '1px solid rgba(107,76,42,0.55)',
               color: '#F0EBE0',
               minHeight: '44px',
             }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.85)'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.55)'; }}
           />
           <button
             onClick={handleSend}
@@ -203,18 +203,18 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
             className="w-11 h-11 flex-shrink-0 rounded flex items-center justify-center transition-all duration-200 disabled:opacity-25"
             style={{
               background: 'transparent',
-              border: '1px solid rgba(212,84,26,0.55)',
+              border: '1px solid rgba(107,76,42,0.8)',
               color: '#D4541A',
             }}
             onMouseEnter={(e) => {
               if (!e.currentTarget.disabled) {
                 e.currentTarget.style.background = 'rgba(212,84,26,0.1)';
-                e.currentTarget.style.borderColor = 'rgba(212,84,26,0.85)';
+                e.currentTarget.style.borderColor = 'rgba(107,76,42,0.95)';
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(212,84,26,0.55)';
+              e.currentTarget.style.borderColor = 'rgba(107,76,42,0.8)';
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -17,7 +17,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
       className="absolute bottom-0 left-0 right-0 flex h-16"
-      style={{ background: '#080F07', borderTop: '1px solid rgba(212,84,26,0.15)' }}
+      style={{ background: '#080F07', borderTop: '1px solid rgba(107,76,42,0.5)' }}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;

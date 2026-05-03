@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Category, GlowAnswer } from '@/types';
 
-const GLOW_STORAGE_KEY  = 'embertalk_glow_answers';
-const EMBER_COUNT_KEY   = 'embertalk_ember_count';
+const GLOW_STORAGE_KEY = 'embertalk_glow_answers';
+const EMBER_COUNT_KEY  = 'embertalk_ember_count';
 
 interface QuestionCardProps {
   mood: string | null;
   onMoodSet: (mood: string) => void;
   onSendToCoach: (question: string, answer: string) => void;
 }
+
+interface DynamicQuestion {
+  question: string;
+  questionEn: string;
+  category: string;
+}
+
+type Phase = 'empathy' | 'theme' | 'loading-questions' | 'glow';
+
+/* ── Static questions ── */
 
 const QUESTIONS: Record<Category, string[]> = {
   らしさ: [
@@ -80,41 +90,29 @@ const QUESTIONS_EN: Record<Category, string[]> = {
 
 const CATEGORY_EN: Record<Category, string> = {
   らしさ: 'Identity',
-  強み: 'Strengths',
-  挑戦: 'Challenge',
+  強み:   'Strengths',
+  挑戦:   'Challenge',
   関係性: 'Relations',
-  未来: 'Future',
+  未来:   'Future',
 };
 
-/* ------------------------------------------------------------------ */
-/* MoodInput — 気分入力画面                                              */
-/* ------------------------------------------------------------------ */
+const CATEGORIES: Category[] = ['らしさ', '強み', '挑戦', '関係性', '未来'];
+
+/* ── MoodInputView ── */
 
 function MoodInputView({ onNext }: { onNext: (mood: string) => void }) {
   const [value, setValue] = useState('');
   return (
-    <div
-      className="flex flex-col bg-[#080F07]"
-      style={{ minHeight: '100%' }}
-    >
+    <div className="flex flex-col bg-[#080F07]" style={{ minHeight: '100%' }}>
       <div className="flex-1 flex flex-col items-center justify-center px-8 py-20 gap-10">
-        {/* Title */}
         <div className="text-center">
-          <h2
-            className="font-bold tracking-wide"
-            style={{ color: '#F0EBE0', fontSize: 22, letterSpacing: '0.08em' }}
-          >
+          <h2 className="font-bold tracking-wide" style={{ color: '#F0EBE0', fontSize: 22, letterSpacing: '0.08em' }}>
             今日の気分は？
           </h2>
-          <p
-            className="text-xs mt-2"
-            style={{ color: '#3A5C36', letterSpacing: '0.1em', opacity: 0.8 }}
-          >
+          <p className="text-xs mt-2" style={{ color: '#3A5C36', letterSpacing: '0.1em', opacity: 0.8 }}>
             How are you feeling right now?
           </p>
         </div>
-
-        {/* Input */}
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -124,15 +122,13 @@ function MoodInputView({ onNext }: { onNext: (mood: string) => void }) {
           className="w-full rounded-lg px-4 py-4 text-sm resize-none focus:outline-none transition-all duration-200"
           style={{
             background: '#111A0F',
-            border: '1px solid rgba(212,84,26,0.2)',
+            border: '1px solid rgba(107,76,42,0.5)',
             color: '#F0EBE0',
             lineHeight: 1.9,
           }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
-          onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.85)'; }}
+          onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.5)'; }}
         />
-
-        {/* Next button */}
         <button
           onClick={() => onNext(value.trim())}
           className="w-full py-3.5 rounded text-sm font-medium transition-all duration-300"
@@ -158,35 +154,146 @@ function MoodInputView({ onNext }: { onNext: (mood: string) => void }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* QuestionCard 本体                                                     */
-/* ------------------------------------------------------------------ */
+/* ── Campfire ── */
+
+function Campfire() {
+  return (
+    <div style={{ position: 'relative', width: 90, height: 90 }}>
+      {/* Outer flame */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 14,
+        width: 52, height: 66,
+        transform: 'translateX(-50%)',
+        background: 'radial-gradient(ellipse at 50% 80%, rgba(212,84,26,0.85) 0%, rgba(232,120,32,0.45) 55%, transparent 80%)',
+        borderRadius: '48% 48% 22% 22%',
+        animation: 'flame-outer 2.2s ease-in-out infinite alternate',
+        filter: 'blur(2px)',
+      }} />
+      {/* Mid flame */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 14,
+        width: 36, height: 54,
+        transform: 'translateX(-50%)',
+        background: 'radial-gradient(ellipse at 50% 80%, rgba(232,120,32,0.95) 0%, rgba(255,175,35,0.6) 55%, transparent 80%)',
+        borderRadius: '48% 48% 22% 22%',
+        animation: 'flame-mid 1.8s ease-in-out infinite alternate',
+        filter: 'blur(1px)',
+      }} />
+      {/* Tip */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 24,
+        width: 18, height: 38,
+        transform: 'translateX(-50%)',
+        background: 'radial-gradient(ellipse at 50% 75%, rgba(255,215,60,1) 0%, rgba(255,165,25,0.8) 50%, transparent 80%)',
+        borderRadius: '50% 50% 28% 28%',
+        animation: 'flame-tip 1.4s ease-in-out infinite alternate',
+      }} />
+      {/* Log left */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 0,
+        width: 64, height: 14,
+        transform: 'translateX(-50%) rotate(-14deg)',
+        transformOrigin: 'center center',
+        background: 'linear-gradient(to right, #2A1505, #3D2210)',
+        borderRadius: 3,
+      }} />
+      {/* Log right */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 0,
+        width: 64, height: 14,
+        transform: 'translateX(-50%) rotate(14deg)',
+        transformOrigin: 'center center',
+        background: 'linear-gradient(to left, #2A1505, #3D2210)',
+        borderRadius: 3,
+      }} />
+      {/* Ember glow */}
+      <div style={{
+        position: 'absolute', left: '50%', bottom: 0,
+        width: 72, height: 20,
+        transform: 'translateX(-50%)',
+        background: 'radial-gradient(ellipse at 50% 100%, rgba(212,84,26,0.4) 0%, transparent 70%)',
+        filter: 'blur(4px)',
+      }} />
+    </div>
+  );
+}
+
+/* ── Main component ── */
 
 export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: QuestionCardProps) {
+  /* Phase state — skip empathy/theme on remount if mood already set */
+  const [phase, setPhase] = useState<Phase>(() => mood !== null ? 'glow' : 'empathy');
+
+  /* Empathy */
+  const [empathyText,  setEmpathyText]  = useState('');
+  const [empathyDone,  setEmpathyDone]  = useState(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* Theme selection */
+  const [selectedThemes, setSelectedThemes] = useState<Category[]>([]);
+  const [customContext,   setCustomContext]  = useState('');
+
+  /* Dynamic questions */
+  const [dynamicQuestions, setDynamicQuestions] = useState<DynamicQuestion[]>([]);
+  const [dynamicIndex,     setDynamicIndex]     = useState(0);
+
+  /* Static glow state */
   const [activeCategory, setActiveCategory] = useState<Category>('らしさ');
   const [questionIndex,  setQuestionIndex]  = useState(0);
-  const [userAnswer,     setUserAnswer]     = useState('');
-  const [saved,          setSaved]          = useState(false);
 
-  // Ember カウント
-  const [emberCount, setEmberCount] = useState<number>(() => {
+  /* Answer */
+  const [userAnswer, setUserAnswer] = useState('');
+  const [saved,      setSaved]      = useState(false);
+
+  /* Ember */
+  const [emberCount,      setEmberCount]      = useState<number>(() => {
     try { return parseInt(localStorage.getItem(EMBER_COUNT_KEY) || '0', 10); } catch { return 0; }
   });
   const [showEmberNotif, setShowEmberNotif] = useState(false);
   const [notifKey,       setNotifKey]       = useState(0);
 
-  const categories: Category[] = ['らしさ', '強み', '挑戦', '関係性', '未来'];
-  const currentQuestion   = QUESTIONS[activeCategory][questionIndex];
-  const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
+  /* ── Fetch empathy text ── */
+  useEffect(() => {
+    if (phase !== 'empathy' || !mood) return;
+    let cancelled = false;
 
-  // MoodInput 画面を表示
-  if (mood === null) {
-    return <MoodInputView onNext={onMoodSet} />;
-  }
+    (async () => {
+      try {
+        const res = await fetch('/api/mood-empathy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mood }),
+        });
+        if (!res.ok || !res.body) throw new Error('fetch failed');
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let text = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          text += decoder.decode(value, { stream: true });
+          if (!cancelled) setEmpathyText(text);
+        }
+      } catch {
+        if (!cancelled) setEmpathyText('焚き火のそばへようこそ。');
+      }
+      if (!cancelled) {
+        setEmpathyDone(true);
+        advanceTimer.current = setTimeout(() => {
+          if (!cancelled) setPhase('theme');
+        }, 2200);
+      }
+    })();
 
-  /* ---- helpers ---- */
+    return () => {
+      cancelled = true;
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    };
+  }, [phase, mood]);
 
-  const saveToReflect = (question: string, answer: string, category: Category): boolean => {
+  /* ── Helpers ── */
+
+  const saveToReflect = (question: string, answer: string, category: string): boolean => {
     if (!answer.trim()) return false;
     try {
       const existing: GlowAnswer[] = JSON.parse(localStorage.getItem(GLOW_STORAGE_KEY) || '[]');
@@ -212,27 +319,90 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
     setTimeout(() => setShowEmberNotif(false), 1600);
   };
 
-  /* ---- handlers ---- */
+  /* ── Theme handlers ── */
+
+  const toggleTheme = (cat: Category) => {
+    setSelectedThemes((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+    );
+  };
+
+  const handleGenerateQuestions = async () => {
+    setPhase('loading-questions');
+    try {
+      const res = await fetch('/api/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood, themes: selectedThemes, customContext }),
+      });
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      if (data.questions?.length > 0) {
+        setDynamicQuestions(data.questions);
+        setDynamicIndex(0);
+      }
+    } catch {
+      /* fallback: proceed with static questions */
+    } finally {
+      setPhase('glow');
+      setUserAnswer('');
+    }
+  };
+
+  /* ── Glow helpers ── */
+
+  const isDynamic = dynamicQuestions.length > 0;
+
+  const currentQuestion   = isDynamic
+    ? dynamicQuestions[dynamicIndex].question
+    : QUESTIONS[activeCategory][questionIndex];
+  const currentQuestionEN = isDynamic
+    ? dynamicQuestions[dynamicIndex].questionEn
+    : QUESTIONS_EN[activeCategory][questionIndex];
+  const currentCategory   = isDynamic
+    ? dynamicQuestions[dynamicIndex].category
+    : activeCategory;
+  const currentCategoryEN = isDynamic
+    ? (CATEGORY_EN[currentCategory as Category] ?? currentCategory)
+    : CATEGORY_EN[activeCategory];
+  const totalQuestions = isDynamic
+    ? dynamicQuestions.length
+    : QUESTIONS[activeCategory].length;
+  const currentIdx = isDynamic ? dynamicIndex : questionIndex;
+
+  const handleNext = () => {
+    saveToReflect(currentQuestion, userAnswer, currentCategory);
+    if (isDynamic) {
+      setDynamicIndex((p) => (p + 1) % dynamicQuestions.length);
+    } else {
+      setQuestionIndex((p) => (p + 1) % QUESTIONS[activeCategory].length);
+    }
+    setUserAnswer('');
+    setSaved(false);
+  };
+
+  const handlePrev = () => {
+    saveToReflect(currentQuestion, userAnswer, currentCategory);
+    if (isDynamic) {
+      setDynamicIndex((p) => (p - 1 + dynamicQuestions.length) % dynamicQuestions.length);
+    } else {
+      setQuestionIndex((p) => (p - 1 + QUESTIONS[activeCategory].length) % QUESTIONS[activeCategory].length);
+    }
+    setUserAnswer('');
+    setSaved(false);
+  };
 
   const handleCategoryChange = (cat: Category) => {
-    saveToReflect(currentQuestion, userAnswer, activeCategory);
+    saveToReflect(currentQuestion, userAnswer, currentCategory);
     setActiveCategory(cat);
     setQuestionIndex(0);
     setUserAnswer('');
     setSaved(false);
   };
 
-  const handleNext = () => {
-    saveToReflect(currentQuestion, userAnswer, activeCategory);
-    const questions = QUESTIONS[activeCategory];
-    setQuestionIndex((prev) => (prev + 1) % questions.length);
-    setUserAnswer('');
-    setSaved(false);
-  };
-
   const handleSave = () => {
     if (!userAnswer.trim()) return;
-    const didSave = saveToReflect(currentQuestion, userAnswer, activeCategory);
+    const didSave = saveToReflect(currentQuestion, userAnswer, currentCategory);
     if (didSave) incrementEmber();
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -240,81 +410,225 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
 
   const handleSendToCoach = () => {
     if (!userAnswer.trim()) return;
-    const didSave = saveToReflect(currentQuestion, userAnswer, activeCategory);
+    const didSave = saveToReflect(currentQuestion, userAnswer, currentCategory);
     if (didSave) incrementEmber();
     onSendToCoach(currentQuestion, userAnswer.trim());
     setUserAnswer('');
     setSaved(false);
   };
 
-  /* ---------------------------------------------------------------- */
+  /* ════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════ */
+
+  /* Mood input */
+  if (mood === null) return <MoodInputView onNext={onMoodSet} />;
+
+  /* ── Empathy ── */
+  if (phase === 'empathy') {
+    return (
+      <div
+        className="ember-enter flex flex-col items-center justify-center px-8 gap-10"
+        style={{ background: '#080F07', minHeight: '100%', paddingTop: '15vh', paddingBottom: '10vh' }}
+      >
+        <Campfire />
+
+        <div className="text-center" style={{ minHeight: 80 }}>
+          {empathyText ? (
+            <p className="text-base leading-loose" style={{ color: '#C8B090', letterSpacing: '0.04em' }}>
+              {empathyText}
+            </p>
+          ) : (
+            <div className="flex gap-1.5 justify-center items-center h-10">
+              {[0, 150, 300].map((d) => (
+                <span
+                  key={d}
+                  className="w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{ background: '#D4541A', animationDelay: `${d}ms` }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {empathyDone && (
+          <button
+            onClick={() => {
+              if (advanceTimer.current) clearTimeout(advanceTimer.current);
+              setPhase('theme');
+            }}
+            className="text-sm tracking-widest transition-all duration-300"
+            style={{ color: '#5A7A55', letterSpacing: '0.2em' }}
+          >
+            次へ ›
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  /* ── Theme selection ── */
+  if (phase === 'theme') {
+    return (
+      <div
+        className="ember-enter flex flex-col px-6 gap-8"
+        style={{ background: '#080F07', minHeight: '100%', paddingTop: 60, paddingBottom: 40 }}
+      >
+        {/* Header */}
+        <div>
+          <h2 className="text-xl font-bold" style={{ color: '#F0EBE0', letterSpacing: '0.06em' }}>
+            今日は何を探りたい？
+          </h2>
+          <p className="text-xs mt-2" style={{ color: '#38563A', letterSpacing: '0.08em' }}>
+            What would you like to explore today?
+          </p>
+        </div>
+
+        {/* Theme grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {CATEGORIES.map((cat) => {
+            const selected = selectedThemes.includes(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleTheme(cat)}
+                className="py-4 px-3 rounded-lg text-left transition-all duration-200"
+                style={
+                  selected
+                    ? { background: 'rgba(107,76,42,0.18)', border: '1px solid rgba(107,76,42,0.75)', color: '#C8B090' }
+                    : { background: '#111A0F',               border: '1px solid rgba(107,76,42,0.4)',  color: '#5A7A55' }
+                }
+              >
+                <span className="block text-sm font-medium">{cat}</span>
+                <span className="block text-[10px] mt-0.5" style={{ opacity: 0.6 }}>{CATEGORY_EN[cat]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom context */}
+        <div>
+          <label className="block text-xs font-medium mb-2" style={{ color: '#38563A' }}>
+            気になっていること（任意）
+          </label>
+          <textarea
+            value={customContext}
+            onChange={(e) => setCustomContext(e.target.value)}
+            placeholder="最近モヤモヤしていること、仕事のことなど..."
+            rows={3}
+            className="w-full rounded-lg px-4 py-3 text-sm resize-none focus:outline-none transition-all duration-200"
+            style={{
+              background: '#111A0F',
+              border: '1px solid rgba(107,76,42,0.45)',
+              color: '#F0EBE0',
+              lineHeight: 1.9,
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.85)'; }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.45)'; }}
+          />
+        </div>
+
+        {/* Start button */}
+        <button
+          onClick={handleGenerateQuestions}
+          className="w-full py-4 rounded text-sm font-medium tracking-widest transition-all duration-300"
+          style={{
+            border: '1px solid rgba(212,84,26,0.5)',
+            color: '#D4541A',
+            background: 'transparent',
+            letterSpacing: '0.18em',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(212,84,26,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.5)';
+          }}
+        >
+          この内容で始める
+        </button>
+      </div>
+    );
+  }
+
+  /* ── Loading questions ── */
+  if (phase === 'loading-questions') {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6" style={{ background: '#080F07', minHeight: '100%' }}>
+        <div className="flex gap-2">
+          {[0, 150, 300].map((d) => (
+            <span
+              key={d}
+              className="w-2 h-2 rounded-full animate-bounce"
+              style={{ background: '#D4541A', animationDelay: `${d}ms` }}
+            />
+          ))}
+        </div>
+        <p className="text-xs tracking-widest" style={{ color: '#38563A' }}>問いを準備しています...</p>
+      </div>
+    );
+  }
+
+  /* ── Glow ── */
   return (
     <div className="flex flex-col bg-[#080F07]">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="px-6 pt-10 pb-6 relative">
-        <h1
-          className="text-2xl font-bold tracking-widest"
-          style={{ color: '#F0EBE0', letterSpacing: '0.15em' }}
-        >
+        <h1 className="text-2xl font-bold tracking-widest" style={{ color: '#F0EBE0', letterSpacing: '0.15em' }}>
           Embertalk
         </h1>
         <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>
-          テーマを選んで、じっくり考えよう
+          {isDynamic ? 'あなたへの問い' : 'テーマを選んで、じっくり考えよう'}
         </p>
 
-        {/* 累計Ember数 */}
         {emberCount > 0 && (
-          <span
-            className="absolute top-10 right-6 text-xs font-medium"
-            style={{ color: '#E87820' }}
-          >
+          <span className="absolute top-10 right-6 text-xs font-medium" style={{ color: '#E87820' }}>
             🔥 {emberCount} {emberCount === 1 ? 'Ember' : 'Embers'}
           </span>
         )}
 
-        {/* +1 Ember フロート通知 */}
         {showEmberNotif && (
-          <span
-            key={notifKey}
-            className="ember-notif-rise text-sm font-bold"
-            style={{ color: '#E87820', right: 20, top: 28 }}
-          >
+          <span key={notifKey} className="ember-notif-rise text-sm font-bold" style={{ color: '#E87820', right: 20, top: 28 }}>
             +1 Ember 🔥
           </span>
         )}
       </div>
 
-      {/* ── Category selector ── */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-6 pb-6">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => handleCategoryChange(cat)}
-            className="flex-shrink-0 px-4 py-2 rounded text-center transition-all duration-200"
-            style={
-              activeCategory === cat
-                ? { background: '#1A2A18', border: '1px solid rgba(212,84,26,0.55)', color: '#F0EBE0' }
-                : { background: 'transparent', border: '1px solid rgba(212,84,26,0.18)', color: '#5A7A55' }
-            }
-          >
-            <span className="block text-sm font-medium leading-tight">{cat}</span>
-            <span
-              className="block text-[10px] leading-tight mt-0.5"
-              style={{ color: activeCategory === cat ? 'rgba(240,235,224,0.5)' : 'rgba(90,122,85,0.6)' }}
+      {/* Category selector — static questions only */}
+      {!isDynamic && (
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide px-6 pb-6">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => handleCategoryChange(cat)}
+              className="flex-shrink-0 px-4 py-2 rounded text-center transition-all duration-200"
+              style={
+                activeCategory === cat
+                  ? { background: '#1A2A18', border: '1px solid rgba(107,76,42,0.75)', color: '#F0EBE0' }
+                  : { background: 'transparent', border: '1px solid rgba(107,76,42,0.38)', color: '#5A7A55' }
+              }
             >
-              {CATEGORY_EN[cat]}
-            </span>
-          </button>
-        ))}
-      </div>
+              <span className="block text-sm font-medium leading-tight">{cat}</span>
+              <span
+                className="block text-[10px] leading-tight mt-0.5"
+                style={{ color: activeCategory === cat ? 'rgba(240,235,224,0.5)' : 'rgba(90,122,85,0.6)' }}
+              >
+                {CATEGORY_EN[cat]}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="px-6 pb-10 flex flex-col gap-4">
 
-        {/* ── Question card ── */}
-        <div className="rounded-lg p-7 flex flex-col gap-5" style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}>
+        {/* Question card */}
+        <div className="rounded-lg p-7 flex flex-col gap-5" style={{ background: '#111A0F', border: '1px solid rgba(107,76,42,0.5)' }}>
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#5A7A55' }}>
-            {activeCategory} · {CATEGORY_EN[activeCategory]}
+            {currentCategory} · {currentCategoryEN}
           </p>
           <div className="flex flex-col gap-3">
             <p className="text-lg font-medium leading-relaxed" style={{ color: '#F0EBE0' }}>
@@ -325,23 +639,46 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
             </p>
           </div>
           <p className="text-xs" style={{ color: 'rgba(240,235,224,0.18)' }}>
-            {questionIndex + 1} / {QUESTIONS[activeCategory].length}
+            {currentIdx + 1} / {totalQuestions}
           </p>
         </div>
 
-        {/* ── Next button ── */}
-        <button
-          onClick={handleNext}
-          className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200"
-          style={{ border: '1px solid rgba(212,84,26,0.22)', color: '#5A7A55', background: 'transparent' }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.5)'; e.currentTarget.style.color = '#C8B090'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.22)'; e.currentTarget.style.color = '#5A7A55'; }}
-        >
-          次の問いへ
-        </button>
+        {/* Navigation */}
+        {isDynamic ? (
+          <div className="flex gap-3">
+            <button
+              onClick={handlePrev}
+              className="flex-1 py-3 rounded text-sm tracking-wide transition-all duration-200"
+              style={{ border: '1px solid rgba(107,76,42,0.38)', color: '#5A7A55', background: 'transparent' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.7)'; e.currentTarget.style.color = '#C8B090'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.38)'; e.currentTarget.style.color = '#5A7A55'; }}
+            >
+              ‹ 前の問い
+            </button>
+            <button
+              onClick={handleNext}
+              className="flex-1 py-3 rounded text-sm tracking-wide transition-all duration-200"
+              style={{ border: '1px solid rgba(107,76,42,0.38)', color: '#5A7A55', background: 'transparent' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.7)'; e.currentTarget.style.color = '#C8B090'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.38)'; e.currentTarget.style.color = '#5A7A55'; }}
+            >
+              次の問い ›
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleNext}
+            className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200"
+            style={{ border: '1px solid rgba(107,76,42,0.38)', color: '#5A7A55', background: 'transparent' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.7)'; e.currentTarget.style.color = '#C8B090'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.38)'; e.currentTarget.style.color = '#5A7A55'; }}
+          >
+            次の問いへ
+          </button>
+        )}
 
-        {/* ── Answer section ── */}
-        <div className="rounded-lg p-5 flex flex-col gap-4" style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}>
+        {/* Answer section */}
+        <div className="rounded-lg p-5 flex flex-col gap-4" style={{ background: '#111A0F', border: '1px solid rgba(107,76,42,0.5)' }}>
           <label className="block text-sm font-medium" style={{ color: '#C8B090' }}>
             あなたの答えを書いてみよう
           </label>
@@ -351,18 +688,17 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
             placeholder="思ったこと、感じたこと、なんでも…"
             rows={4}
             className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
-            style={{ background: '#0A1208', border: '1px solid rgba(212,84,26,0.2)', color: '#F0EBE0' }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
-            onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
+            style={{ background: '#0A1208', border: '1px solid rgba(107,76,42,0.5)', color: '#F0EBE0' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.85)'; }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(107,76,42,0.5)'; }}
           />
 
-          {/* Reflectに記録 */}
           <button
             onClick={handleSave}
             disabled={!userAnswer.trim()}
             className="w-full py-2.5 rounded text-sm tracking-wide transition-all duration-200 disabled:opacity-25"
             style={{
-              border: '1px solid rgba(212,84,26,0.28)',
+              border: '1px solid rgba(107,76,42,0.55)',
               color: saved ? '#5A7A55' : '#8AAA85',
               background: saved ? 'rgba(90,122,85,0.08)' : 'transparent',
             }}
@@ -370,7 +706,6 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
             {saved ? 'Reflectに記録しました ✓' : 'Reflectに記録する'}
           </button>
 
-          {/* AIコーチに相談 */}
           <button
             onClick={handleSendToCoach}
             disabled={!userAnswer.trim()}
