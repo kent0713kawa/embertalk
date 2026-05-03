@@ -2,20 +2,33 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `あなたは、人の言葉の奥にある「その人らしさ」を詩的に言語化する存在です。
-提供された回答や内省の記録をもとに、必ず「あなたのらしさは」で書き始める、200〜300文字の日本語テキストを生成してください。
+const SYSTEM_PROMPT = `あなたは、人の言葉から「その人らしさ」「やりたいこと」「次の一歩」を温かく言語化する存在です。
+提供されたデータをもとに、以下の3パートを順番に出力してください。
+
+【パート1】
+「あなたのらしさは」で始める。150〜200文字。
+詩的に、具体的なエピソードや言葉を自然に織り込んで言語化する。
+
+【パート2】
+「見えてきたあなたのやりたいことは」で始める。80〜120文字。
+回答・内省・今日の気分を総合して、やりたいことを言語化する。
+
+【パート3】
+「次のBBQまでに一つだけやること：」で始める。30〜60文字。
+温かく背中を押す、具体的なアクションを一つ提示する。
 
 条件：
-- 「あなたのらしさは」で始める（この言葉で始めること）
-- 温かく、詩的で、静かな文体
-- 本人が読んで自分を信じ直せるような、深い言語化
-- 具体的なエピソードや言葉を自然に織り込む
-- 200〜300文字程度（短すぎず長すぎず）
-- 本文のみ出力（前置き・見出し・説明は一切不要）`;
+- 3パートを改行で区切る（空行なし）
+- 温かく、詩的で、背中を押すような文体
+- 本文のみ出力（説明・前置き・見出し・番号不要）`;
 
 export async function POST(request: Request) {
   try {
-    const { glowAnswers, reflections } = await request.json();
+    const { glowAnswers, reflections, mood } = await request.json();
+
+    const moodSection = mood
+      ? `【今日の気分】\n${mood}`
+      : '';
 
     const glowSection =
       glowAnswers && glowAnswers.length > 0
@@ -36,9 +49,9 @@ export async function POST(request: Request) {
               (r: { date: string; moment: string; improvement: string; action: string }) =>
                 [
                   r.date,
-                  r.moment ? `自分らしい瞬間: ${r.moment}` : '',
+                  r.moment      ? `自分らしい瞬間: ${r.moment}`      : '',
                   r.improvement ? `伸ばしたいこと: ${r.improvement}` : '',
-                  r.action ? `明日やること: ${r.action}` : '',
+                  r.action      ? `明日やること: ${r.action}`         : '',
                 ]
                   .filter(Boolean)
                   .join('\n')
@@ -46,7 +59,9 @@ export async function POST(request: Request) {
             .join('\n\n')}`
         : '';
 
-    const userContent = [glowSection, reflectionSection].filter(Boolean).join('\n\n');
+    const userContent = [moodSection, glowSection, reflectionSection]
+      .filter(Boolean)
+      .join('\n\n');
 
     if (!userContent.trim()) {
       return new Response(
@@ -57,7 +72,7 @@ export async function POST(request: Request) {
 
     const stream = client.messages.stream({
       model: 'claude-opus-4-7',
-      max_tokens: 512,
+      max_tokens: 600,
       system: [
         {
           type: 'text',
@@ -68,7 +83,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: 'user',
-          content: `以下の記録から、その人のらしさを言語化してください。\n\n${userContent}`,
+          content: `以下の記録から、その人のらしさ・やりたいこと・次のアクションを言語化してください。\n\n${userContent}`,
         },
       ],
     });

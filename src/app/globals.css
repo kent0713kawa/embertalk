@@ -75,3 +75,18 @@ textarea::placeholder {
 .ember-modal-enter {
   animation: ember-modal-slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
+/* +1 Ember 通知アニメーション */
+@keyframes ember-notif-rise {
+  0%   { opacity: 0; transform: translateY(0px); }
+  15%  { opacity: 1; }
+  75%  { opacity: 1; transform: translateY(-28px); }
+  100% { opacity: 0; transform: translateY(-42px); }
+}
+
+.ember-notif-rise {
+  animation: ember-notif-rise 1.5s ease-out forwards;
+  position: absolute;
+  pointer-events: none;
+  z-index: 30;
+}

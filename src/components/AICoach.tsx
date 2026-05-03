@@ -4,20 +4,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Message } from '@/types';
 
 interface AICoachProps {
+  mood?: string | null;
   coachSeed?: { key: number; text: string } | null;
 }
 
-const INITIAL_MESSAGE: Message = {
+const buildInitialMessage = (mood?: string | null): Message => ({
   role: 'assistant',
-  content: 'やあ、焚き火の近くに来てくれてありがとう。\n今夜、どんなことを話してみたい？',
-};
+  content: mood
+    ? `やあ、焚き火の近くに来てくれてありがとう。\n「${mood}」という気持ちを持ってきてくれたんだね。\nその感覚、もう少し聞かせてもらえる？`
+    : 'やあ、焚き火の近くに来てくれてありがとう。\n今夜、どんなことを話してみたい？',
+});
 
-export default function AICoach({ coachSeed }: AICoachProps) {
-  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
+export default function AICoach({ mood, coachSeed }: AICoachProps) {
+  const initialMsg = buildInitialMessage(mood);
+  const [messages, setMessages] = useState<Message[]>([initialMsg]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesRef = useRef<Message[]>([INITIAL_MESSAGE]);
+  const messagesRef = useRef<Message[]>([initialMsg]);
   const lastSeedKey = useRef(0);
   const isLoadingRef = useRef(false);
 

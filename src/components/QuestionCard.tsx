@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import { Category, GlowAnswer } from '@/types';
 
-const GLOW_STORAGE_KEY = 'embertalk_glow_answers';
+const GLOW_STORAGE_KEY  = 'embertalk_glow_answers';
+const EMBER_COUNT_KEY   = 'embertalk_ember_count';
 
 interface QuestionCardProps {
+  mood: string | null;
+  onMoodSet: (mood: string) => void;
   onSendToCoach: (question: string, answer: string) => void;
 }
 
@@ -83,20 +86,111 @@ const CATEGORY_EN: Record<Category, string> = {
   未来: 'Future',
 };
 
-export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
+/* ------------------------------------------------------------------ */
+/* MoodInput — 気分入力画面                                              */
+/* ------------------------------------------------------------------ */
+
+function MoodInputView({ onNext }: { onNext: (mood: string) => void }) {
+  const [value, setValue] = useState('');
+  return (
+    <div
+      className="flex flex-col bg-[#080F07]"
+      style={{ minHeight: '100%' }}
+    >
+      <div className="flex-1 flex flex-col items-center justify-center px-8 py-20 gap-10">
+        {/* Title */}
+        <div className="text-center">
+          <h2
+            className="font-bold tracking-wide"
+            style={{ color: '#F0EBE0', fontSize: 22, letterSpacing: '0.08em' }}
+          >
+            今日の気分は？
+          </h2>
+          <p
+            className="text-xs mt-2"
+            style={{ color: '#3A5C36', letterSpacing: '0.1em', opacity: 0.8 }}
+          >
+            How are you feeling right now?
+          </p>
+        </div>
+
+        {/* Input */}
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="なんかモヤモヤしてる、ワクワクしてる、疲れてる..."
+          rows={3}
+          autoFocus
+          className="w-full rounded-lg px-4 py-4 text-sm resize-none focus:outline-none transition-all duration-200"
+          style={{
+            background: '#111A0F',
+            border: '1px solid rgba(212,84,26,0.2)',
+            color: '#F0EBE0',
+            lineHeight: 1.9,
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
+          onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
+        />
+
+        {/* Next button */}
+        <button
+          onClick={() => onNext(value.trim())}
+          className="w-full py-3.5 rounded text-sm font-medium transition-all duration-300"
+          style={{
+            border: '1px solid rgba(212,84,26,0.45)',
+            color: '#D4541A',
+            background: 'transparent',
+            letterSpacing: '0.2em',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(212,84,26,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.75)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.45)';
+          }}
+        >
+          次へ
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* QuestionCard 本体                                                     */
+/* ------------------------------------------------------------------ */
+
+export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: QuestionCardProps) {
   const [activeCategory, setActiveCategory] = useState<Category>('らしさ');
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [questionIndex,  setQuestionIndex]  = useState(0);
+  const [userAnswer,     setUserAnswer]     = useState('');
+  const [saved,          setSaved]          = useState(false);
+
+  // Ember カウント
+  const [emberCount, setEmberCount] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem(EMBER_COUNT_KEY) || '0', 10); } catch { return 0; }
+  });
+  const [showEmberNotif, setShowEmberNotif] = useState(false);
+  const [notifKey,       setNotifKey]       = useState(0);
 
   const categories: Category[] = ['らしさ', '強み', '挑戦', '関係性', '未来'];
+  const currentQuestion   = QUESTIONS[activeCategory][questionIndex];
+  const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
 
-  const saveToReflect = (question: string, answer: string, category: Category) => {
-    if (!answer.trim()) return;
+  // MoodInput 画面を表示
+  if (mood === null) {
+    return <MoodInputView onNext={onMoodSet} />;
+  }
+
+  /* ---- helpers ---- */
+
+  const saveToReflect = (question: string, answer: string, category: Category): boolean => {
+    if (!answer.trim()) return false;
     try {
       const existing: GlowAnswer[] = JSON.parse(localStorage.getItem(GLOW_STORAGE_KEY) || '[]');
-      // 同じ問いの直近の回答と重複していたらスキップ
-      if (existing[0]?.question === question && existing[0]?.answer === answer.trim()) return;
+      if (existing[0]?.question === question && existing[0]?.answer === answer.trim()) return false;
       const entry: GlowAnswer = {
         id: Date.now().toString(),
         question,
@@ -105,11 +199,22 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
         date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
       };
       localStorage.setItem(GLOW_STORAGE_KEY, JSON.stringify([entry, ...existing].slice(0, 30)));
-    } catch { /* ignore */ }
+      return true;
+    } catch { return false; }
   };
 
+  const incrementEmber = () => {
+    const next = emberCount + 1;
+    setEmberCount(next);
+    try { localStorage.setItem(EMBER_COUNT_KEY, String(next)); } catch { /* ignore */ }
+    setNotifKey((k) => k + 1);
+    setShowEmberNotif(true);
+    setTimeout(() => setShowEmberNotif(false), 1600);
+  };
+
+  /* ---- handlers ---- */
+
   const handleCategoryChange = (cat: Category) => {
-    // カテゴリ切替時に書きかけの回答を自動保存
     saveToReflect(currentQuestion, userAnswer, activeCategory);
     setActiveCategory(cat);
     setQuestionIndex(0);
@@ -118,7 +223,6 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   };
 
   const handleNext = () => {
-    // 次の問いへ進む際に回答を自動保存
     saveToReflect(currentQuestion, userAnswer, activeCategory);
     const questions = QUESTIONS[activeCategory];
     setQuestionIndex((prev) => (prev + 1) % questions.length);
@@ -128,26 +232,27 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
 
   const handleSave = () => {
     if (!userAnswer.trim()) return;
-    saveToReflect(currentQuestion, userAnswer, activeCategory);
+    const didSave = saveToReflect(currentQuestion, userAnswer, activeCategory);
+    if (didSave) incrementEmber();
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSendToCoach = () => {
     if (!userAnswer.trim()) return;
-    saveToReflect(currentQuestion, userAnswer, activeCategory);
+    const didSave = saveToReflect(currentQuestion, userAnswer, activeCategory);
+    if (didSave) incrementEmber();
     onSendToCoach(currentQuestion, userAnswer.trim());
     setUserAnswer('');
     setSaved(false);
   };
 
-  const currentQuestion = QUESTIONS[activeCategory][questionIndex];
-  const currentQuestionEN = QUESTIONS_EN[activeCategory][questionIndex];
-
+  /* ---------------------------------------------------------------- */
   return (
     <div className="flex flex-col bg-[#080F07]">
-      {/* Header */}
-      <div className="px-6 pt-10 pb-6">
+
+      {/* ── Header ── */}
+      <div className="px-6 pt-10 pb-6 relative">
         <h1
           className="text-2xl font-bold tracking-widest"
           style={{ color: '#F0EBE0', letterSpacing: '0.15em' }}
@@ -157,9 +262,30 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
         <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>
           テーマを選んで、じっくり考えよう
         </p>
+
+        {/* 累計Ember数 */}
+        {emberCount > 0 && (
+          <span
+            className="absolute top-10 right-6 text-xs font-medium"
+            style={{ color: '#E87820' }}
+          >
+            🔥 {emberCount} {emberCount === 1 ? 'Ember' : 'Embers'}
+          </span>
+        )}
+
+        {/* +1 Ember フロート通知 */}
+        {showEmberNotif && (
+          <span
+            key={notifKey}
+            className="ember-notif-rise text-sm font-bold"
+            style={{ color: '#E87820', right: 20, top: 28 }}
+          >
+            +1 Ember 🔥
+          </span>
+        )}
       </div>
 
-      {/* Category selector */}
+      {/* ── Category selector ── */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide px-6 pb-6">
         {categories.map((cat) => (
           <button
@@ -168,16 +294,8 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
             className="flex-shrink-0 px-4 py-2 rounded text-center transition-all duration-200"
             style={
               activeCategory === cat
-                ? {
-                    background: '#1A2A18',
-                    border: '1px solid rgba(212,84,26,0.55)',
-                    color: '#F0EBE0',
-                  }
-                : {
-                    background: 'transparent',
-                    border: '1px solid rgba(212,84,26,0.18)',
-                    color: '#5A7A55',
-                  }
+                ? { background: '#1A2A18', border: '1px solid rgba(212,84,26,0.55)', color: '#F0EBE0' }
+                : { background: 'transparent', border: '1px solid rgba(212,84,26,0.18)', color: '#5A7A55' }
             }
           >
             <span className="block text-sm font-medium leading-tight">{cat}</span>
@@ -192,31 +310,17 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
       </div>
 
       <div className="px-6 pb-10 flex flex-col gap-4">
-        {/* Question card */}
-        <div
-          className="rounded-lg p-7 flex flex-col gap-5"
-          style={{
-            background: '#111A0F',
-            border: '1px solid rgba(212,84,26,0.15)',
-          }}
-        >
-          <p
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#5A7A55' }}
-          >
+
+        {/* ── Question card ── */}
+        <div className="rounded-lg p-7 flex flex-col gap-5" style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#5A7A55' }}>
             {activeCategory} · {CATEGORY_EN[activeCategory]}
           </p>
           <div className="flex flex-col gap-3">
-            <p
-              className="text-lg font-medium leading-relaxed"
-              style={{ color: '#F0EBE0' }}
-            >
+            <p className="text-lg font-medium leading-relaxed" style={{ color: '#F0EBE0' }}>
               {currentQuestion}
             </p>
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: 'rgba(240,235,224,0.3)' }}
-            >
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,235,224,0.3)' }}>
               {currentQuestionEN}
             </p>
           </div>
@@ -225,39 +329,20 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
           </p>
         </div>
 
-        {/* Next button */}
+        {/* ── Next button ── */}
         <button
           onClick={handleNext}
           className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200"
-          style={{
-            border: '1px solid rgba(212,84,26,0.22)',
-            color: '#5A7A55',
-            background: 'transparent',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.5)';
-            e.currentTarget.style.color = '#C8B090';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.22)';
-            e.currentTarget.style.color = '#5A7A55';
-          }}
+          style={{ border: '1px solid rgba(212,84,26,0.22)', color: '#5A7A55', background: 'transparent' }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.5)'; e.currentTarget.style.color = '#C8B090'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.22)'; e.currentTarget.style.color = '#5A7A55'; }}
         >
           次の問いへ
         </button>
 
-        {/* Answer section */}
-        <div
-          className="rounded-lg p-5 flex flex-col gap-4"
-          style={{
-            background: '#111A0F',
-            border: '1px solid rgba(212,84,26,0.15)',
-          }}
-        >
-          <label
-            className="block text-sm font-medium"
-            style={{ color: '#C8B090' }}
-          >
+        {/* ── Answer section ── */}
+        <div className="rounded-lg p-5 flex flex-col gap-4" style={{ background: '#111A0F', border: '1px solid rgba(212,84,26,0.15)' }}>
+          <label className="block text-sm font-medium" style={{ color: '#C8B090' }}>
             あなたの答えを書いてみよう
           </label>
           <textarea
@@ -266,13 +351,9 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
             placeholder="思ったこと、感じたこと、なんでも…"
             rows={4}
             className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
-            style={{
-              background: '#0A1208',
-              border: '1px solid rgba(212,84,26,0.2)',
-              color: '#F0EBE0',
-            }}
+            style={{ background: '#0A1208', border: '1px solid rgba(212,84,26,0.2)', color: '#F0EBE0' }}
             onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
           />
 
           {/* Reflectに記録 */}
@@ -294,25 +375,14 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
             onClick={handleSendToCoach}
             disabled={!userAnswer.trim()}
             className="w-full py-3 rounded text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25"
-            style={{
-              border: '1px solid rgba(212,84,26,0.6)',
-              color: '#D4541A',
-              background: 'transparent',
-            }}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.background = 'rgba(212,84,26,0.1)';
-                e.currentTarget.style.borderColor = 'rgba(212,84,26,0.85)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)';
-            }}
+            style={{ border: '1px solid rgba(212,84,26,0.6)', color: '#D4541A', background: 'transparent' }}
+            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = 'rgba(212,84,26,0.1)'; e.currentTarget.style.borderColor = 'rgba(212,84,26,0.85)'; } }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
           >
             AIコーチに相談する
           </button>
         </div>
+
       </div>
     </div>
   );

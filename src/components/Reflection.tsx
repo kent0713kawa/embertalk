@@ -13,7 +13,11 @@ type TimelineItem =
 
 /* ------------------------------------------------------------------ */
 
-export default function Reflection() {
+interface ReflectionProps {
+  mood?: string | null;
+}
+
+export default function Reflection({ mood }: ReflectionProps) {
   const [moment,      setMoment]      = useState('');
   const [improvement, setImprovement] = useState('');
   const [action,      setAction]      = useState('');
@@ -93,7 +97,7 @@ export default function Reflection() {
       const response = await fetch('/api/ember-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ glowAnswers, reflections: entries }),
+        body: JSON.stringify({ glowAnswers, reflections: entries, mood }),
       });
       if (!response.ok || !response.body) throw new Error('Network error');
       const reader  = response.body.getReader();
