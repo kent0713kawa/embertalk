@@ -87,38 +87,58 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
   const [activeCategory, setActiveCategory] = useState<Category>('らしさ');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
+  const [saved, setSaved] = useState(false);
 
   const categories: Category[] = ['らしさ', '強み', '挑戦', '関係性', '未来'];
 
+  const saveToReflect = (question: string, answer: string, category: Category) => {
+    if (!answer.trim()) return;
+    try {
+      const existing: GlowAnswer[] = JSON.parse(localStorage.getItem(GLOW_STORAGE_KEY) || '[]');
+      // 同じ問いの直近の回答と重複していたらスキップ
+      if (existing[0]?.question === question && existing[0]?.answer === answer.trim()) return;
+      const entry: GlowAnswer = {
+        id: Date.now().toString(),
+        question,
+        answer: answer.trim(),
+        category,
+        date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+      };
+      localStorage.setItem(GLOW_STORAGE_KEY, JSON.stringify([entry, ...existing].slice(0, 30)));
+    } catch { /* ignore */ }
+  };
+
   const handleCategoryChange = (cat: Category) => {
+    // カテゴリ切替時に書きかけの回答を自動保存
+    saveToReflect(currentQuestion, userAnswer, activeCategory);
     setActiveCategory(cat);
     setQuestionIndex(0);
     setUserAnswer('');
+    setSaved(false);
   };
 
   const handleNext = () => {
+    // 次の問いへ進む際に回答を自動保存
+    saveToReflect(currentQuestion, userAnswer, activeCategory);
     const questions = QUESTIONS[activeCategory];
     setQuestionIndex((prev) => (prev + 1) % questions.length);
     setUserAnswer('');
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    if (!userAnswer.trim()) return;
+    saveToReflect(currentQuestion, userAnswer, activeCategory);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSendToCoach = () => {
     if (!userAnswer.trim()) return;
-
-    try {
-      const existing: GlowAnswer[] = JSON.parse(localStorage.getItem(GLOW_STORAGE_KEY) || '[]');
-      const entry: GlowAnswer = {
-        id: Date.now().toString(),
-        question: currentQuestion,
-        answer: userAnswer.trim(),
-        category: activeCategory,
-        date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
-      };
-      localStorage.setItem(GLOW_STORAGE_KEY, JSON.stringify([entry, ...existing].slice(0, 20)));
-    } catch { /* ignore */ }
-
+    saveToReflect(currentQuestion, userAnswer, activeCategory);
     onSendToCoach(currentQuestion, userAnswer.trim());
     setUserAnswer('');
+    setSaved(false);
   };
 
   const currentQuestion = QUESTIONS[activeCategory][questionIndex];
@@ -242,7 +262,7 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
           </label>
           <textarea
             value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
+            onChange={(e) => { setUserAnswer(e.target.value); setSaved(false); }}
             placeholder="思ったこと、感じたこと、なんでも…"
             rows={4}
             className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
@@ -254,6 +274,22 @@ export default function QuestionCard({ onSendToCoach }: QuestionCardProps) {
             onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.6)'; }}
             onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,84,26,0.2)'; }}
           />
+
+          {/* Reflectに記録 */}
+          <button
+            onClick={handleSave}
+            disabled={!userAnswer.trim()}
+            className="w-full py-2.5 rounded text-sm tracking-wide transition-all duration-200 disabled:opacity-25"
+            style={{
+              border: '1px solid rgba(212,84,26,0.28)',
+              color: saved ? '#5A7A55' : '#8AAA85',
+              background: saved ? 'rgba(90,122,85,0.08)' : 'transparent',
+            }}
+          >
+            {saved ? 'Reflectに記録しました ✓' : 'Reflectに記録する'}
+          </button>
+
+          {/* AIコーチに相談 */}
           <button
             onClick={handleSendToCoach}
             disabled={!userAnswer.trim()}

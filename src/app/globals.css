@@ -26,39 +26,35 @@ textarea::placeholder {
 }
 
 /* Tab transition animations */
-@keyframes ember-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+
+/* 旧画面がじわっと暗くなる */
+@keyframes ember-veil-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-@keyframes ember-flash {
-  0%   { opacity: 0; }
-  25%  { opacity: 1; }
+/* アンバーの残り火がゆっくり消えていく */
+@keyframes ember-warm-out {
+  0%   { opacity: 1; }
   100% { opacity: 0; }
 }
 
-.ember-enter {
-  animation: ember-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* 新画面がそっとフェードイン */
+@keyframes ember-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.ember-flash {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 75%,
-    rgba(212, 84, 26, 0.22) 0%,
-    rgba(232, 120, 32, 0.08) 40%,
-    transparent 70%
-  );
-  animation: ember-flash 0.55s ease-out forwards;
-  z-index: 10;
+.ember-veil-in {
+  animation: ember-veil-in 0.3s ease-in forwards;
+}
+
+.ember-warm-out {
+  animation: ember-warm-out 0.5s ease-out forwards;
+}
+
+.ember-enter {
+  animation: ember-enter 0.5s ease-out both;
 }
 
 /* Ember Report modal animations */

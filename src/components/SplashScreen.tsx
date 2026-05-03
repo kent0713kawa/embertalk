@@ -213,7 +213,19 @@ export default function SplashScreen({ onStart }: { onStart: () => void }) {
             animation: 'fade-in-up 1s ease-out 0.7s both',
           }}
         >
-          焚き火のそばで、自分と話そう
+          あなたらしさに、火をつけよう
+        </p>
+        <p
+          className="text-[10px] tracking-widest"
+          style={{
+            marginTop: 4,
+            color: '#3A5C36',
+            letterSpacing: '0.1em',
+            opacity: 0.55,
+            animation: 'fade-in-up 1s ease-out 0.8s both',
+          }}
+        >
+          Ignite what makes you, you.
         </p>
 
         {/* Start button */}
