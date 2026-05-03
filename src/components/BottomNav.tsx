@@ -17,7 +17,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   return (
     <nav
       className="absolute bottom-0 left-0 right-0 flex h-16"
-      style={{ background: '#080F07', borderTop: '1px solid rgba(107,76,42,0.5)' }}
+      style={{ background: '#080F07', borderTop: '1px solid rgba(45,59,45,0.5)' }}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -29,13 +29,13 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           >
             <span
               className="text-sm font-medium tracking-wide"
-              style={{ color: isActive ? '#D4541A' : '#38563A' }}
+              style={{ color: isActive ? '#C8B090' : '#38563A' }}
             >
               {tab.label}
             </span>
             <span
               className="text-[9px] leading-tight tracking-wide"
-              style={{ color: isActive ? 'rgba(212,84,26,0.55)' : 'rgba(56,86,58,0.6)' }}
+              style={{ color: isActive ? 'rgba(200,176,144,0.55)' : 'rgba(56,86,58,0.6)' }}
             >
               {tab.sub}
             </span>

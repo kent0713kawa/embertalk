@@ -243,8 +243,8 @@ export default function SplashScreen({ onStart }: { onStart: () => void }) {
             animation: 'fade-in-up 1s ease-out 0.9s both',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(212,84,26,0.7)';
-            e.currentTarget.style.color = '#D4541A';
+            e.currentTarget.style.borderColor = 'rgba(45,59,45,0.7)';
+            e.currentTarget.style.color = '#C8B090';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = 'rgba(200,192,176,0.25)';
