@@ -51,12 +51,16 @@ export default function Reflection({ mood }: ReflectionProps) {
     } catch { /* ignore */ }
   }, []);
 
-  // Merged timeline sorted newest-first (id = Date.now() string)
-  const timeline: TimelineItem[] = [
-    ...entries.map((e): TimelineItem        => ({ type: 'reflect', id: e.id, data: e })),
+  // Auto-saved items (Glow + EmberAI), newest-first
+  const autoTimeline: TimelineItem[] = [
     ...glowAnswers.map((a): TimelineItem    => ({ type: 'glow',    id: a.id, data: a })),
     ...emberAIEntries.map((c): TimelineItem => ({ type: 'emberai', id: c.id, data: c })),
   ].sort((a, b) => parseInt(b.id) - parseInt(a.id));
+
+  // Manual entries (Reflect), newest-first
+  const manualTimeline: TimelineItem[] = entries
+    .map((e): TimelineItem => ({ type: 'reflect', id: e.id, data: e }))
+    .sort((a, b) => parseInt(b.id) - parseInt(a.id));
 
   /* ---- handlers ---- */
 
@@ -166,43 +170,83 @@ export default function Reflection({ mood }: ReflectionProps) {
           <p className="text-sm mt-1" style={{ color: '#5A7A55' }}>今日の気づきを書き留めよう</p>
         </div>
 
-        {/* ── Input form ── */}
-        <div className="px-6 space-y-3">
-          {[
-            { label: '自分らしい瞬間',  value: moment,      set: setMoment,      rows: 3, placeholder: '例：みんなが困っているときに、自然と声をかけていた' },
-            { label: '伸ばしたいこと',  value: improvement, set: setImprovement, rows: 3, placeholder: '例：もっと自分の意見をはっきり言えるようになりたい' },
-            { label: '明日やること',    value: action,      set: setAction,      rows: 2, placeholder: '例：朝、鏡の前で今日の自分に一言かけてみる' },
-          ].map(({ label, value, set, rows, placeholder }) => (
-            <div key={label} className="rounded-lg p-5" style={{ background: '#111A0F', border: '1px solid rgba(45,59,45,0.5)' }}>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#5A7A55' }}>
-                {label}
-              </label>
-              <textarea
-                value={value}
-                onChange={(e) => set(e.target.value)}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                placeholder={placeholder}
-                rows={rows}
-                className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
-                style={textareaStyle}
-              />
+        {/* ── 今日の記録（自動保存） ── */}
+        <div className="px-6 mt-2">
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold tracking-widest" style={{ color: '#38563A', letterSpacing: '0.1em' }}>今日の記録</h2>
+            <p className="text-[10px] mt-0.5" style={{ color: '#2D4430', letterSpacing: '0.06em' }}>GlowとEmberAIの内容が自動で保存されます</p>
+          </div>
+          {autoTimeline.length > 0 ? (
+            <div className="space-y-3">
+              {autoTimeline.map((item) =>
+                item.type === 'glow'
+                  ? <GlowCard    key={item.id} data={item.data as GlowAnswer}   onDelete={() => handleDeleteGlow(item.id)} />
+                  : <EmberAICard key={item.id} data={item.data as EmberAIEntry} onDelete={() => handleDeleteEmberAI(item.id)} />
+              )}
             </div>
-          ))}
+          ) : (
+            <p className="text-xs py-6 text-center" style={{ color: '#2D4430' }}>
+              GlowやEmberAIで会話すると、ここに記録されます
+            </p>
+          )}
+        </div>
 
-          <button
-            onClick={handleSave}
-            disabled={!moment.trim() && !improvement.trim() && !action.trim()}
-            className="w-full py-3.5 rounded text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25"
-            style={{ border: '1px solid rgba(45,59,45,0.75)', color: saved ? '#5A7A55' : '#C8B090', background: 'transparent' }}
-          >
-            {saved ? '保存しました ✓' : '今日の気づきを保存する'}
-          </button>
+        {/* ── セクション区切り ── */}
+        <div className="px-6 mt-8 mb-6">
+          <div className="h-px w-full" style={{ background: 'linear-gradient(to right, transparent, rgba(45,59,45,0.35), transparent)' }} />
+        </div>
+
+        {/* ── 自分で書き留める ── */}
+        <div className="px-6">
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold tracking-widest" style={{ color: '#38563A', letterSpacing: '0.1em' }}>自分で書き留める</h2>
+            <p className="text-[10px] mt-0.5" style={{ color: '#2D4430', letterSpacing: '0.06em' }}>気づきや想いを自分の言葉で残しましょう</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: '自分らしい瞬間',  value: moment,      set: setMoment,      rows: 3, placeholder: '例：みんなが困っているときに、自然と声をかけていた' },
+              { label: '伸ばしたいこと',  value: improvement, set: setImprovement, rows: 3, placeholder: '例：もっと自分の意見をはっきり言えるようになりたい' },
+              { label: '明日やること',    value: action,      set: setAction,      rows: 2, placeholder: '例：朝、鏡の前で今日の自分に一言かけてみる' },
+            ].map(({ label, value, set, rows, placeholder }) => (
+              <div key={label} className="rounded-lg p-5" style={{ background: '#111A0F', border: '1px solid rgba(45,59,45,0.5)' }}>
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#5A7A55' }}>
+                  {label}
+                </label>
+                <textarea
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  placeholder={placeholder}
+                  rows={rows}
+                  className="w-full rounded px-4 py-3 text-sm resize-none leading-relaxed focus:outline-none transition-all duration-200"
+                  style={textareaStyle}
+                />
+              </div>
+            ))}
+
+            <button
+              onClick={handleSave}
+              disabled={!moment.trim() && !improvement.trim() && !action.trim()}
+              className="w-full py-3.5 rounded text-sm font-medium tracking-wide transition-all duration-200 disabled:opacity-25"
+              style={{ border: '1px solid rgba(45,59,45,0.75)', color: saved ? '#5A7A55' : '#C8B090', background: 'transparent' }}
+            >
+              {saved ? '保存しました ✓' : '今日の気づきを保存する'}
+            </button>
+
+            {manualTimeline.length > 0 && (
+              <div className="space-y-3 pt-2">
+                {manualTimeline.map((item) => (
+                  <ReflectCard key={item.id} data={item.data as ReflectionEntry} onDelete={() => handleDeleteReflect(item.id)} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Ember Report ── */}
         <div className="px-6 mt-8 mb-2">
-          <div className="h-px w-full" style={{ background: 'linear-gradient(to right, transparent, rgba(45,59,45,0.4), transparent)' }} />
+          <div className="h-px w-full" style={{ background: 'linear-gradient(to right, transparent, rgba(45,59,45,0.35), transparent)' }} />
         </div>
         <div className="px-6 pb-2">
           <button
@@ -213,49 +257,23 @@ export default function Reflection({ mood }: ReflectionProps) {
             onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = 'rgba(45,59,45,0.15)'; e.currentTarget.style.borderColor = 'rgba(45,59,45,0.9)'; } }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(45,59,45,0.07)'; e.currentTarget.style.borderColor = 'rgba(45,59,45,0.7)'; }}
           >
-            <span className="text-base font-semibold tracking-widest" style={{ color: '#E87820', letterSpacing: '0.12em' }}>Ember Report</span>
+            <span className="text-base font-semibold tracking-widest" style={{ color: '#C8B090', letterSpacing: '0.12em' }}>Ember Report</span>
             <span className="text-xs tracking-wide" style={{ color: '#5A7A55' }}>あなたのらしさを言語化する</span>
           </button>
         </div>
 
         {/* ── Saved Ember Reports ── */}
         {savedReports.length > 0 && (
-          <div className="px-6 mt-6 pb-2">
-            <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#38563A' }}>Ember Reports</h2>
+          <div className="px-6 mt-6 pb-10">
+            <h2 className="text-xs font-semibold tracking-widest mb-3" style={{ color: '#38563A', letterSpacing: '0.1em' }}>Ember Reports</h2>
             <div className="space-y-3">
               {savedReports.map((report) => (
                 <div key={report.id} className="rounded-lg p-5 relative" style={{ background: 'rgba(45,59,45,0.05)', border: '1px solid rgba(45,59,45,0.55)' }}>
                   <p className="text-xs mb-3" style={{ color: '#38563A' }}>{report.date}</p>
-                  <div className="space-y-1">
-                    {report.content.split('\n').map((line, i) => {
-                      const isHeading = line.startsWith('🔥') || line.startsWith('🌱') || line.startsWith('▶');
-                      return line === ''
-                        ? <div key={i} className="h-2" />
-                        : <p key={i} className={isHeading ? 'font-semibold text-xs mt-3 first:mt-0' : 'text-xs'}
-                            style={{ color: isHeading ? '#C8B090' : '#C8B090', letterSpacing: '0.02em', lineHeight: 1.8 }}>
-                            {line}
-                          </p>;
-                    })}
-                  </div>
+                  <ReportText content={report.content} />
                   <DeleteBtn onClick={() => handleDeleteReport(report.id)} />
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Unified timeline ── */}
-        {timeline.length > 0 && (
-          <div className="px-6 mt-8 pb-10">
-            <h2 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#38563A' }}>記録</h2>
-            <div className="space-y-3">
-              {timeline.map((item) =>
-                item.type === 'glow'
-                  ? <GlowCard    key={item.id} data={item.data as GlowAnswer}       onDelete={() => handleDeleteGlow(item.id)} />
-                  : item.type === 'emberai'
-                  ? <EmberAICard key={item.id} data={item.data as EmberAIEntry}     onDelete={() => handleDeleteEmberAI(item.id)} />
-                  : <ReflectCard key={item.id} data={item.data as ReflectionEntry}  onDelete={() => handleDeleteReflect(item.id)} />
-              )}
             </div>
           </div>
         )}
@@ -293,19 +311,7 @@ export default function Reflection({ mood }: ReflectionProps) {
                   ))}
                 </div>
               )}
-              {reportText && (
-                <div className="space-y-1">
-                  {reportText.split('\n').map((line, i) => {
-                    const isHeading = line.startsWith('🔥') || line.startsWith('🌱') || line.startsWith('▶');
-                    return line === ''
-                      ? <div key={i} className="h-3" />
-                      : <p key={i} className={isHeading ? 'font-semibold text-sm mt-5 first:mt-0' : 'text-sm'}
-                          style={{ color: isHeading ? '#C8B090' : '#F0EBE0', letterSpacing: '0.03em', lineHeight: 1.9 }}>
-                          {line}
-                        </p>;
-                  })}
-                </div>
-              )}
+              {reportText && <ReportText content={reportText} large />}
             </div>
 
             {reportText && !isGenerating && (
@@ -346,6 +352,31 @@ function Badge({ children, amber }: { children: React.ReactNode; amber?: boolean
     >
       {children}
     </span>
+  );
+}
+
+const REPORT_HEADINGS = ['あなたのらしさとは？', 'らしさを活かすヒント', '次の一歩'];
+
+function ReportText({ content, large }: { content: string; large?: boolean }) {
+  const baseSize = large ? 'text-sm' : 'text-xs';
+  const headingSize = large ? 'text-sm' : 'text-xs';
+  return (
+    <div className="space-y-0.5">
+      {content.split('\n').map((line, i) => {
+        const isHeading = REPORT_HEADINGS.some((h) => line.trim() === h);
+        return line === ''
+          ? <div key={i} className={large ? 'h-3' : 'h-2'} />
+          : <p key={i}
+              className={isHeading ? `${headingSize} font-semibold mt-4 first:mt-0` : baseSize}
+              style={{
+                color: isHeading ? '#C8B090' : (large ? '#F0EBE0' : '#C8B090'),
+                letterSpacing: '0.03em',
+                lineHeight: 1.9,
+              }}>
+              {line}
+            </p>;
+      })}
+    </div>
   );
 }
 

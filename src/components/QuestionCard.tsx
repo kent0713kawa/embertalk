@@ -229,7 +229,7 @@ function LoadingCampfire() {
   return (
     <div
       className="relative flex items-end justify-center"
-      style={{ width: 128, height: 168, animation: 'campfire-grow 3s ease-in forwards' }}
+      style={{ width: 128, height: 168 }}
     >
       <div className="absolute" style={{
         bottom: 6, left: '50%',
