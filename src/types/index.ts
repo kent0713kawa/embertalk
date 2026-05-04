@@ -27,3 +27,10 @@ export interface EmberReport {
   date: string;
   content: string;
 }
+
+export interface EmberAIEntry {
+  id: string;
+  date: string;
+  userMessage: string;
+  aiResponse: string;
+}

@@ -223,6 +223,73 @@ function Campfire() {
   );
 }
 
+/* ── LoadingCampfire ── */
+
+function LoadingCampfire() {
+  return (
+    <div
+      className="relative flex items-end justify-center"
+      style={{ width: 128, height: 168, animation: 'campfire-grow 3s ease-in forwards' }}
+    >
+      <div className="absolute" style={{
+        bottom: 6, left: '50%',
+        width: 108, height: 44, borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(212,84,26,0.55) 0%, rgba(212,84,26,0.12) 55%, transparent 72%)',
+        animation: 'glow-pulse 2.2s ease-in-out infinite',
+        transform: 'translateX(-50%)',
+      }} />
+      <div className="absolute" style={{
+        bottom: 64, left: '44%', width: 3, height: 3, borderRadius: '50%',
+        background: '#FFD060', animation: 'spark-a 1.9s ease-out 0s infinite',
+      }} />
+      <div className="absolute" style={{
+        bottom: 64, left: '56%', width: 2, height: 2, borderRadius: '50%',
+        background: '#FFA040', animation: 'spark-b 2.15s ease-out 0.7s infinite',
+      }} />
+      <div className="absolute" style={{
+        bottom: 64, left: '50%', width: 2, height: 2, borderRadius: '50%',
+        background: '#FFE090', animation: 'spark-c 1.65s ease-out 1.3s infinite',
+      }} />
+      <div className="absolute" style={{
+        bottom: 20, left: '50%', width: 46, height: 88,
+        background: 'linear-gradient(to top, #B83A0A 0%, #D4541A 30%, #E87820 65%, rgba(232,120,32,0) 100%)',
+        borderRadius: '50% 50% 28% 28% / 62% 62% 38% 38%',
+        transformOrigin: 'bottom center',
+        animation: 'flicker-outer 1.9s ease-in-out infinite',
+        transform: 'translateX(-50%)',
+      }} />
+      <div className="absolute" style={{
+        bottom: 20, left: '50%', width: 30, height: 68,
+        background: 'linear-gradient(to top, #E87820 0%, #F5A030 40%, #FFD060 78%, rgba(255,208,96,0) 100%)',
+        borderRadius: '50% 50% 28% 28% / 62% 62% 38% 38%',
+        transformOrigin: 'bottom center',
+        animation: 'flicker-mid 1.25s ease-in-out infinite',
+        transform: 'translateX(-50%)',
+      }} />
+      <div className="absolute" style={{
+        bottom: 24, left: '50%', width: 16, height: 46,
+        background: 'linear-gradient(to top, #FFD060 0%, #FFEE99 60%, rgba(255,238,153,0) 100%)',
+        borderRadius: '50% 50% 28% 28% / 62% 62% 38% 38%',
+        transformOrigin: 'bottom center',
+        animation: 'flicker-tip 0.85s ease-in-out infinite',
+        transform: 'translateX(-50%)',
+      }} />
+      <div className="absolute" style={{
+        bottom: 10, left: '50%', width: 68, height: 10,
+        background: 'linear-gradient(to right, #5C3410, #3D2208)',
+        borderRadius: 8,
+        transform: 'translateX(-68%) rotate(-22deg)',
+      }} />
+      <div className="absolute" style={{
+        bottom: 10, left: '50%', width: 68, height: 10,
+        background: 'linear-gradient(to left, #5C3410, #3D2208)',
+        borderRadius: 8,
+        transform: 'translateX(-32%) rotate(22deg)',
+      }} />
+    </div>
+  );
+}
+
 /* ── Main component ── */
 
 export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: QuestionCardProps) {
@@ -254,8 +321,10 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
   useEffect(() => {
     if (phase !== 'empathy') return;
     if (!mood?.trim()) {
-      setPhase('theme');
-      return;
+      setEmpathyText('焚き火のそばへようこそ。');
+      setEmpathyDone(true);
+      advanceTimer.current = setTimeout(() => setPhase('theme'), 1500);
+      return () => { if (advanceTimer.current) clearTimeout(advanceTimer.current); };
     }
     let cancelled = false;
 
@@ -548,14 +617,9 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
   /* ── Loading questions ── */
   if (phase === 'loading-questions') {
     return (
-      <div className="flex flex-col items-center justify-center gap-6" style={{ background: '#080F07', minHeight: '100%' }}>
-        <div className="flex gap-2">
-          {[0, 150, 300].map((d) => (
-            <span key={d} className="w-2 h-2 rounded-full animate-bounce"
-              style={{ background: '#D4541A', animationDelay: `${d}ms` }} />
-          ))}
-        </div>
-        <p className="text-xs tracking-widest" style={{ color: '#38563A' }}>問いを準備しています...</p>
+      <div className="flex flex-col items-center justify-center gap-8" style={{ background: '#080F07', minHeight: '100%' }}>
+        <LoadingCampfire />
+        <p className="text-xs tracking-widest" style={{ color: '#38563A', letterSpacing: '0.15em' }}>問いを準備しています...</p>
       </div>
     );
   }

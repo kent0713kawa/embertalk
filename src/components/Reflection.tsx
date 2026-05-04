@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { EmberReport, GlowAnswer, ReflectionEntry } from '@/types';
+import { EmberAIEntry, EmberReport, GlowAnswer, ReflectionEntry } from '@/types';
 
 const STORAGE_KEY        = 'embertalk_reflections';
 const GLOW_STORAGE_KEY   = 'embertalk_glow_answers';
 const REPORT_STORAGE_KEY = 'embertalk_ember_reports';
+const EMBERAI_STORAGE_KEY = 'embertalk_emberai_conversations';
 
 type TimelineItem =
   | { type: 'reflect'; id: string; data: ReflectionEntry }
-  | { type: 'glow';    id: string; data: GlowAnswer };
+  | { type: 'glow';    id: string; data: GlowAnswer }
+  | { type: 'emberai'; id: string; data: EmberAIEntry };
 
 /* ------------------------------------------------------------------ */
 
@@ -18,12 +20,13 @@ interface ReflectionProps {
 }
 
 export default function Reflection({ mood }: ReflectionProps) {
-  const [moment,      setMoment]      = useState('');
-  const [improvement, setImprovement] = useState('');
-  const [action,      setAction]      = useState('');
-  const [entries,     setEntries]     = useState<ReflectionEntry[]>([]);
-  const [glowAnswers, setGlowAnswers] = useState<GlowAnswer[]>([]);
-  const [saved,       setSaved]       = useState(false);
+  const [moment,           setMoment]           = useState('');
+  const [improvement,      setImprovement]      = useState('');
+  const [action,           setAction]           = useState('');
+  const [entries,          setEntries]          = useState<ReflectionEntry[]>([]);
+  const [glowAnswers,      setGlowAnswers]      = useState<GlowAnswer[]>([]);
+  const [emberAIEntries,   setEmberAIEntries]   = useState<EmberAIEntry[]>([]);
+  const [saved,            setSaved]            = useState(false);
 
   // Ember Report
   const [showModal,    setShowModal]    = useState(false);
@@ -42,13 +45,17 @@ export default function Reflection({ mood }: ReflectionProps) {
 
       const rawReports = localStorage.getItem(REPORT_STORAGE_KEY);
       if (rawReports) setSavedReports(JSON.parse(rawReports));
+
+      const rawEmberAI = localStorage.getItem(EMBERAI_STORAGE_KEY);
+      if (rawEmberAI) setEmberAIEntries(JSON.parse(rawEmberAI));
     } catch { /* ignore */ }
   }, []);
 
   // Merged timeline sorted newest-first (id = Date.now() string)
   const timeline: TimelineItem[] = [
-    ...entries.map((e): TimelineItem     => ({ type: 'reflect', id: e.id, data: e })),
-    ...glowAnswers.map((a): TimelineItem => ({ type: 'glow',    id: a.id, data: a })),
+    ...entries.map((e): TimelineItem        => ({ type: 'reflect', id: e.id, data: e })),
+    ...glowAnswers.map((a): TimelineItem    => ({ type: 'glow',    id: a.id, data: a })),
+    ...emberAIEntries.map((c): TimelineItem => ({ type: 'emberai', id: c.id, data: c })),
   ].sort((a, b) => parseInt(b.id) - parseInt(a.id));
 
   /* ---- handlers ---- */
@@ -82,6 +89,12 @@ export default function Reflection({ mood }: ReflectionProps) {
     localStorage.setItem(GLOW_STORAGE_KEY, JSON.stringify(updated));
   };
 
+  const handleDeleteEmberAI = (id: string) => {
+    const updated = emberAIEntries.filter((e) => e.id !== id);
+    setEmberAIEntries(updated);
+    localStorage.setItem(EMBERAI_STORAGE_KEY, JSON.stringify(updated));
+  };
+
   const handleDeleteReport = (id: string) => {
     const updated = savedReports.filter((r) => r.id !== id);
     setSavedReports(updated);
@@ -97,7 +110,7 @@ export default function Reflection({ mood }: ReflectionProps) {
       const response = await fetch('/api/ember-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ glowAnswers, reflections: entries, mood }),
+        body: JSON.stringify({ glowAnswers, reflections: entries, mood, emberAIConversations: emberAIEntries }),
       });
       if (!response.ok || !response.body) throw new Error('Network error');
       const reader  = response.body.getReader();
@@ -213,7 +226,17 @@ export default function Reflection({ mood }: ReflectionProps) {
               {savedReports.map((report) => (
                 <div key={report.id} className="rounded-lg p-5 relative" style={{ background: 'rgba(45,59,45,0.05)', border: '1px solid rgba(45,59,45,0.55)' }}>
                   <p className="text-xs mb-3" style={{ color: '#38563A' }}>{report.date}</p>
-                  <p className="text-sm leading-relaxed" style={{ color: '#C8B090', lineHeight: 1.9 }}>{report.content}</p>
+                  <div className="space-y-1">
+                    {report.content.split('\n').map((line, i) => {
+                      const isHeading = line.startsWith('🔥') || line.startsWith('🌱') || line.startsWith('▶');
+                      return line === ''
+                        ? <div key={i} className="h-2" />
+                        : <p key={i} className={isHeading ? 'font-semibold text-xs mt-3 first:mt-0' : 'text-xs'}
+                            style={{ color: isHeading ? '#C8B090' : '#C8B090', letterSpacing: '0.02em', lineHeight: 1.8 }}>
+                            {line}
+                          </p>;
+                    })}
+                  </div>
                   <DeleteBtn onClick={() => handleDeleteReport(report.id)} />
                 </div>
               ))}
@@ -228,8 +251,10 @@ export default function Reflection({ mood }: ReflectionProps) {
             <div className="space-y-3">
               {timeline.map((item) =>
                 item.type === 'glow'
-                  ? <GlowCard    key={item.id} data={item.data} onDelete={() => handleDeleteGlow(item.id)} />
-                  : <ReflectCard key={item.id} data={item.data} onDelete={() => handleDeleteReflect(item.id)} />
+                  ? <GlowCard    key={item.id} data={item.data as GlowAnswer}       onDelete={() => handleDeleteGlow(item.id)} />
+                  : item.type === 'emberai'
+                  ? <EmberAICard key={item.id} data={item.data as EmberAIEntry}     onDelete={() => handleDeleteEmberAI(item.id)} />
+                  : <ReflectCard key={item.id} data={item.data as ReflectionEntry}  onDelete={() => handleDeleteReflect(item.id)} />
               )}
             </div>
           </div>
@@ -269,7 +294,17 @@ export default function Reflection({ mood }: ReflectionProps) {
                 </div>
               )}
               {reportText && (
-                <p className="text-base" style={{ color: '#F0EBE0', letterSpacing: '0.03em', lineHeight: 2 }}>{reportText}</p>
+                <div className="space-y-1">
+                  {reportText.split('\n').map((line, i) => {
+                    const isHeading = line.startsWith('🔥') || line.startsWith('🌱') || line.startsWith('▶');
+                    return line === ''
+                      ? <div key={i} className="h-3" />
+                      : <p key={i} className={isHeading ? 'font-semibold text-sm mt-5 first:mt-0' : 'text-sm'}
+                          style={{ color: isHeading ? '#C8B090' : '#F0EBE0', letterSpacing: '0.03em', lineHeight: 1.9 }}>
+                          {line}
+                        </p>;
+                  })}
+                </div>
               )}
             </div>
 
@@ -323,6 +358,23 @@ function DeleteBtn({ onClick }: { onClick: () => void }) {
       onMouseEnter={(e) => { e.currentTarget.style.color = '#D4541A'; }}
       onMouseLeave={(e) => { e.currentTarget.style.color = '#38563A'; }}
     >×</button>
+  );
+}
+
+function EmberAICard({ data, onDelete }: { data: EmberAIEntry; onDelete: () => void }) {
+  return (
+    <div className="rounded-lg p-5 relative" style={{ background: '#111A0F', border: '1px solid rgba(45,59,45,0.45)' }}>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="inline-block text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded"
+          style={{ color: '#7AAAA5', background: 'rgba(90,150,145,0.08)', border: '1px solid rgba(90,150,145,0.22)' }}>
+          EmberAI
+        </span>
+        <span className="text-xs" style={{ color: '#38563A' }}>{data.date}</span>
+      </div>
+      <p className="text-xs mb-2 leading-relaxed" style={{ color: '#5A7A55' }}>{data.userMessage}</p>
+      <p className="text-sm leading-relaxed" style={{ color: '#C8B090' }}>{data.aiResponse}</p>
+      <DeleteBtn onClick={onDelete} />
+    </div>
   );
 }
 

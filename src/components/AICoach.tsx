@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Message } from '@/types';
+import { EmberAIEntry, Message } from '@/types';
+
+const EMBERAI_STORAGE_KEY = 'embertalk_emberai_conversations';
 
 interface AICoachProps {
   mood?: string | null;
@@ -73,6 +75,18 @@ export default function AICoach({ mood, coachSeed }: AICoachProps) {
           updated[updated.length - 1] = { role: 'assistant', content: accumulated };
           return updated;
         });
+      }
+      if (accumulated.trim()) {
+        try {
+          const entry: EmberAIEntry = {
+            id: Date.now().toString(),
+            date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
+            userMessage: text,
+            aiResponse: accumulated.trim(),
+          };
+          const existing: EmberAIEntry[] = JSON.parse(localStorage.getItem(EMBERAI_STORAGE_KEY) || '[]');
+          localStorage.setItem(EMBERAI_STORAGE_KEY, JSON.stringify([entry, ...existing].slice(0, 50)));
+        } catch { /* ignore */ }
       }
     } catch {
       setMessages((prev) => {
