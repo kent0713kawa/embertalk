@@ -1,36 +1,19 @@
-export type Category = 'らしさ' | '強み' | '挑戦' | '関係性' | '未来';
-export type Tab = 'question' | 'coach' | 'reflection';
+export type Tab = 'check' | 'result' | 'reflect';
 
-export interface Message {
-  role: 'user' | 'assistant';
-  content: string;
+export interface CheckAnswers {
+  q1: number | null;
+  q2: number | null;
+  q3: number | null;
 }
 
-export interface ReflectionEntry {
-  id: string;
-  date: string;
-  moment: string;
-  improvement: string;
+export interface DiagnosisResult {
+  type: string;
+  message: string;
   action: string;
 }
 
-export interface GlowAnswer {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-  date: string;
-}
-
-export interface EmberReport {
+export interface ReflectEntry {
   id: string;
   date: string;
-  content: string;
-}
-
-export interface EmberAIEntry {
-  id: string;
-  date: string;
-  userMessage: string;
-  aiResponse: string;
+  memo: string;
 }

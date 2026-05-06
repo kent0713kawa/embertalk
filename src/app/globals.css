@@ -22,90 +22,34 @@
 }
 
 textarea::placeholder {
-  color: #38563A;
+  color: #2D4430;
 }
 
-/* Tab transition animations */
-
-/* 旧画面がじわっと暗くなる */
+/* Tab transition */
 @keyframes ember-veil-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
-/* アンバーの残り火がゆっくり消えていく */
 @keyframes ember-warm-out {
   0%   { opacity: 1; }
   100% { opacity: 0; }
 }
-
-/* 新画面がそっとフェードイン */
 @keyframes ember-enter {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .ember-veil-in {
   animation: ember-veil-in 0.3s ease-in forwards;
 }
-
 .ember-warm-out {
   animation: ember-warm-out 0.5s ease-out forwards;
 }
-
 .ember-enter {
-  animation: ember-enter 0.5s ease-out both;
+  animation: ember-enter 0.4s ease-out both;
 }
 
-/* Ember Report modal animations */
-@keyframes ember-modal-backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes ember-modal-slide-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-.ember-modal-backdrop {
-  animation: ember-modal-backdrop-in 0.25s ease-out forwards;
-}
-
-.ember-modal-enter {
-  animation: ember-modal-slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* +1 Ember 通知アニメーション */
-@keyframes ember-notif-rise {
-  0%   { opacity: 0; transform: translateY(0px); }
-  15%  { opacity: 1; }
-  75%  { opacity: 1; transform: translateY(-28px); }
-  100% { opacity: 0; transform: translateY(-42px); }
-}
-
-.ember-notif-rise {
-  animation: ember-notif-rise 1.5s ease-out forwards;
-  position: absolute;
-  pointer-events: none;
-  z-index: 30;
-}
-
-/* Campfire flame animations (EmpathyView) */
-@keyframes flame-outer {
-  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.8; }
-  100% { transform: translateX(-50%) scaleY(1.07) scaleX(0.93); opacity: 0.95; }
-}
-@keyframes flame-mid {
-  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); }
-  100% { transform: translateX(-50%) scaleY(1.11) scaleX(0.86); }
-}
-@keyframes flame-tip {
-  0%   { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.88; }
-  100% { transform: translateX(-50%) scaleY(1.15) scaleX(0.75); opacity: 1; }
-}
-
-/* SplashScreen / Loading campfire animations */
+/* Splash campfire animations */
 @keyframes flicker-outer {
   0%, 100% { transform: translateX(-50%) scaleX(1) scaleY(1) rotate(-1deg); }
   20%  { transform: translateX(-50%) scaleX(0.92) scaleY(1.09) rotate(2deg); }
@@ -141,11 +85,23 @@ textarea::placeholder {
   100% { transform: translateY(-48px) translateX(-6px); opacity: 0; }
 }
 
-/* Loading campfire grow animation */
-@keyframes campfire-grow {
-  0%   { transform: scale(0.6);  opacity: 0.4; }
-  15%  { transform: scale(0.9);  opacity: 0.8; }
-  45%  { transform: scale(1.15); opacity: 1;   }
-  75%  { transform: scale(1.4);  opacity: 1;   }
-  100% { transform: scale(1.65); opacity: 1;   }
+/* Diagnosis type glow */
+@keyframes type-glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(232,120,32,0.25); }
+  50%       { text-shadow: 0 0 40px rgba(232,120,32,0.55); }
+}
+.type-glow {
+  animation: type-glow 2.5s ease-in-out infinite;
+}
+
+/* Fade-in-up for splash */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Ember title glow */
+@keyframes ember-glow {
+  0%, 100% { text-shadow: 0 0 24px rgba(212,84,26,0.25); }
+  50%       { text-shadow: 0 0 48px rgba(212,84,26,0.55); }
 }
