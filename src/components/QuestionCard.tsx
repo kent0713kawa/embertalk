@@ -18,7 +18,7 @@ interface DynamicQuestion {
   category: string;
 }
 
-type Phase = 'empathy' | 'theme' | 'loading-questions' | 'glow';
+type Phase = 'empathy' | 'empathy-fire' | 'theme' | 'loading-questions' | 'glow';
 
 /* ── Static questions ── */
 
@@ -320,11 +320,10 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
   /* ── Fetch empathy text ── */
   useEffect(() => {
     if (phase !== 'empathy') return;
+    if (mood === null) return;
     if (!mood?.trim()) {
-      setEmpathyText('焚き火のそばへようこそ。');
-      setEmpathyDone(true);
-      advanceTimer.current = setTimeout(() => setPhase('theme'), 1500);
-      return () => { if (advanceTimer.current) clearTimeout(advanceTimer.current); };
+      setPhase('theme');
+      return;
     }
     let cancelled = false;
 
@@ -351,8 +350,8 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
       if (!cancelled) {
         setEmpathyDone(true);
         advanceTimer.current = setTimeout(() => {
-          if (!cancelled) setPhase('theme');
-        }, 2200);
+          if (!cancelled) setPhase('empathy-fire');
+        }, 2500);
       }
     })();
 
@@ -361,6 +360,13 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
     };
   }, [phase, mood]);
+
+  /* ── Campfire transition after empathy ── */
+  useEffect(() => {
+    if (phase !== 'empathy-fire') return;
+    const timer = setTimeout(() => setPhase('theme'), 900);
+    return () => clearTimeout(timer);
+  }, [phase]);
 
   /* ── Helpers ── */
 
@@ -496,38 +502,62 @@ export default function QuestionCard({ mood, onMoodSet, onSendToCoach }: Questio
   if (phase === 'empathy') {
     return (
       <div
-        className="ember-enter flex flex-col items-center justify-center px-8 gap-10"
-        style={{ background: '#080F07', minHeight: '100%', paddingTop: '15vh', paddingBottom: '10vh' }}
+        className="ember-enter flex flex-col items-center justify-center px-10"
+        style={{ background: '#080F07', minHeight: '100%' }}
       >
-        <Campfire />
-        <div className="text-center" style={{ minHeight: 80 }}>
+        <div className="text-center" style={{ maxWidth: 320, minHeight: 100 }}>
           {empathyText ? (
-            <p className="text-base leading-loose" style={{ color: '#C8B090', letterSpacing: '0.04em' }}>
+            <p
+              className="leading-loose"
+              style={{
+                color: '#D4B896',
+                fontSize: 17,
+                letterSpacing: '0.055em',
+                lineHeight: 2.1,
+                textShadow: '0 0 24px rgba(212,84,26,0.18)',
+              }}
+            >
               {empathyText}
             </p>
           ) : (
-            <div className="flex gap-1.5 justify-center items-center h-10">
-              {[0, 150, 300].map((d) => (
-                <span key={d} className="w-1.5 h-1.5 rounded-full animate-bounce"
-                  style={{ background: '#D4541A', animationDelay: `${d}ms` }} />
+            <div className="flex gap-2 justify-center items-center" style={{ height: 100 }}>
+              {[0, 160, 320].map((d) => (
+                <span
+                  key={d}
+                  className="w-1.5 h-1.5 rounded-full animate-bounce"
+                  style={{ background: '#C87040', animationDelay: `${d}ms` }}
+                />
               ))}
             </div>
           )}
         </div>
+
         {empathyDone && (
           <button
             onClick={() => {
               if (advanceTimer.current) clearTimeout(advanceTimer.current);
-              setPhase('theme');
+              setPhase('empathy-fire');
             }}
-            className="text-sm tracking-widest transition-opacity duration-300"
-            style={{ color: '#5A7A55', letterSpacing: '0.2em', opacity: 0.7 }}
+            className="mt-14 text-sm tracking-widest transition-opacity duration-300"
+            style={{ color: '#4A6A45', letterSpacing: '0.22em', opacity: 0.65 }}
             onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.65'; }}
           >
             次へ ›
           </button>
         )}
+      </div>
+    );
+  }
+
+  /* ── Empathy → fire transition ── */
+  if (phase === 'empathy-fire') {
+    return (
+      <div
+        className="flex flex-col items-center justify-center"
+        style={{ background: '#080F07', minHeight: '100%' }}
+      >
+        <LoadingCampfire />
       </div>
     );
   }
